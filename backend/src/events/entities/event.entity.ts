@@ -2,15 +2,18 @@ import {
   Entity,
   Column,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
 
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Organization } from '../../organizations/entities/organization.entity';
+import { EventStatus } from '../enums/event-status.enum';
+
+import { Fight } from '../../fights/entities/fight.entity';
 
 @Entity('events')
 export class Event extends BaseEntity {
-
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column({
@@ -41,16 +44,26 @@ export class Event extends BaseEntity {
   description: string;
 
   @Column({
-    default: 'UPCOMING',
+    type: 'enum',
+    enum: EventStatus,
+    default: EventStatus.UPCOMING,
   })
-  status: string;
+  status: EventStatus;
 
   @ManyToOne(
-()=>Organization,
-organization=>organization.events,
-{
-eager:true,
-}
+    () => Organization,
+    (organization) => organization.events,
+    {
+      eager: true,
+      nullable: false,
+      onDelete: 'RESTRICT',
+    },
+  )
+  organization: Organization;
+
+@OneToMany(
+  () => Fight,
+  (fight) => fight.event,
 )
-organization:Organization;
+fights: Fight[];
 }

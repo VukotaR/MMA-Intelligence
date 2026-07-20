@@ -1,41 +1,46 @@
 import {
-  IsString,
-  IsNumber,
   IsDateString,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
-export class CreateEventDto {
+import { EventStatus } from '../enums/event-status.enum';
 
+export class CreateEventDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsDateString()
-  date: Date;
+  date: string;
 
   @IsString()
+  @IsNotEmpty()
   city: string;
 
   @IsString()
+  @IsNotEmpty()
   country: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   venue?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   poster?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   description?: string;
 
+  @IsEnum(EventStatus)
   @IsOptional()
-  @IsString()
-  status?: string;
+  status?: EventStatus;
 
-  @IsNumber()
+  @IsInt()
   organizationId: number;
-
 }

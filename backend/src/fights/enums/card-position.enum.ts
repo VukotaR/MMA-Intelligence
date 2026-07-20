@@ -1,0 +1,7 @@
+export enum CardPosition {
+  MAIN_EVENT = 'MAIN_EVENT',
+  CO_MAIN_EVENT = 'CO_MAIN_EVENT',
+  MAIN_CARD = 'MAIN_CARD',
+  PRELIMS = 'PRELIMS',
+  EARLY_PRELIMS = 'EARLY_PRELIMS',
+}

@@ -1,101 +1,153 @@
 import {
-  Entity,
   Column,
+  Entity,
+  JoinColumn,
   ManyToOne,
 } from 'typeorm';
 
 import { BaseEntity } from '../../common/entities/base.entity';
-
 import { Event } from '../../events/entities/event.entity';
-
 import { Fighter } from '../../fighters/entities/fighter.entity';
+import { WeightClass } from '../../fighters/enums/weight-class.enum';
 
+import { FightStatus } from '../enums/fight-status.enum';
+import { FightMethod } from '../enums/fight-method.enum';
+import { CardPosition } from '../enums/card-position.enum';
+import { AnalysisStatus } from '../enums/analysis-status.enum';
 
 @Entity('fights')
 export class Fight extends BaseEntity {
-
-
   @ManyToOne(
     () => Event,
+    (event) => event.fights,
     {
-      eager: true,
+      nullable: false,
+      onDelete: 'CASCADE',
     },
   )
+  @JoinColumn({
+    name: 'eventId',
+  })
   event: Event;
 
-
-
   @ManyToOne(
     () => Fighter,
     {
+      nullable: false,
       eager: true,
+      onDelete: 'RESTRICT',
     },
   )
+  @JoinColumn({
+    name: 'redCornerId',
+  })
   redCorner: Fighter;
 
-
+  @ManyToOne(
+    () => Fighter,
+    {
+      nullable: false,
+      eager: true,
+      onDelete: 'RESTRICT',
+    },
+  )
+  @JoinColumn({
+    name: 'blueCornerId',
+  })
+  blueCorner: Fighter;
 
   @ManyToOne(
     () => Fighter,
     {
+      nullable: true,
       eager: true,
+      onDelete: 'SET NULL',
     },
   )
-  blueCorner: Fighter;
-
-
-
-  @ManyToOne(
-  () => Fighter,
-  {
-    nullable: true,
-    eager: true,
-  },
-)
-winner?: Fighter;
-
-
+  @JoinColumn({
+    name: 'winnerId',
+  })
+  winner?: Fighter | null;
 
   @Column({
-    nullable: true,
+    type: 'enum',
+    enum: WeightClass,
   })
-  method: string;
-
-
+  weightClass: WeightClass;
 
   @Column({
-    nullable: true,
+    type: 'enum',
+    enum: FightStatus,
+    default: FightStatus.SCHEDULED,
   })
-  round: number;
-
-
+  status: FightStatus;
 
   @Column({
-    nullable: true,
+    type: 'enum',
+    enum: CardPosition,
+    default: CardPosition.MAIN_CARD,
   })
-  time: string;
-
-
+  cardPosition: CardPosition;
 
   @Column({
-    default: 'SCHEDULED',
-  })
-  status: string;
-
-
-
-  @Column({
+    type: 'enum',
+    enum: FightMethod,
     nullable: true,
   })
-  videoUrl: string;
+  method?: FightMethod | null;
 
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  methodDetails?: string | null;
 
+  @Column({
+    type: 'int',
+    default: 3,
+  })
+  scheduledRounds: number;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  finishedRound?: number | null;
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  finishedTime?: string | null;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  titleFight: boolean;
+
+  @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  youtubeUrl?: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: AnalysisStatus,
+    default: AnalysisStatus.NOT_STARTED,
+  })
+  analysisStatus: AnalysisStatus;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  description: string;
+  analysisSummary?: string | null;
 
-
+  @Column({
+    type: 'int',
+    default: 0,
+  })
+  cardOrder: number;
 }

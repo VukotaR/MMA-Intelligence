@@ -1,5 +1,6 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
+import { WeightClass } from '../enums/weight-class.enum';
 
 @Entity('fighters')
 export class Fighter extends BaseEntity {
@@ -22,6 +23,13 @@ export class Fighter extends BaseEntity {
 
   @Column()
   weight: number;
+
+  @Column({
+  type: 'enum',
+  enum: WeightClass,
+  default: WeightClass.LIGHTWEIGHT
+})
+weightClass: WeightClass;
 
   @Column({ default: 0 })
   reach: number;

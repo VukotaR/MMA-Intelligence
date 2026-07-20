@@ -3,12 +3,16 @@ import {
   IsNumber,
   IsOptional,
   IsBoolean,
+  IsUrl,
+  Min,
+  Max,
+  MinLength,
 } from 'class-validator';
 
 export class CreateFighterDto {
 
-
   @IsString()
+  @MinLength(2)
   name: string;
 
   @IsOptional()
@@ -16,19 +20,28 @@ export class CreateFighterDto {
   nickname?: string;
 
   @IsString()
+  @MinLength(2)
   country: string;
 
   @IsNumber()
+  @Min(18)
+  @Max(60)
   age: number;
 
   @IsNumber()
+  @Min(140)
+  @Max(230)
   height: number;
 
   @IsNumber()
+  @Min(45)
+  @Max(180)
   weight: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(120)
+  @Max(250)
   reach?: number;
 
   @IsOptional()
@@ -40,79 +53,95 @@ export class CreateFighterDto {
   fightingStyle?: string;
 
   @IsOptional()
-  @IsString()
+  @IsUrl()
   image?: string;
 
   @IsOptional()
   @IsString()
   bio?: string;
 
-
   @IsOptional()
   @IsNumber()
+  @Min(0)
   wins?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   losses?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   draws?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   koWins?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   submissionWins?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   decisionWins?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   currentWinStreak?: number;
-
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(100)
   strikingAccuracy?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(100)
   strikingDefense?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   significantStrikesPerMinute?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   significantStrikesAbsorbedPerMinute?: number;
-
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(100)
   takedownAccuracy?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
+  @Max(100)
   takedownDefense?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   takedownsPer15?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   submissionAverage?: number;
-
 
   @IsOptional()
   @IsNumber()
+  @Min(1)
   ranking?: number;
 
   @IsOptional()
@@ -122,5 +151,4 @@ export class CreateFighterDto {
   @IsOptional()
   @IsBoolean()
   interimChampion?: boolean;
-
 }

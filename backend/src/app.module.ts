@@ -12,6 +12,7 @@ import { EventsModule } from './events/events.module';
 import { FightsModule } from './fights/fights.module';
 import { AnalysisModule } from './analysis/analysis.module';
 import { FightStatisticsModule } from './fight-statistics/fight-statistics.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 
 @Module({
@@ -38,6 +39,8 @@ import { FightStatisticsModule } from './fight-statistics/fight-statistics.modul
     AnalysisModule,
 
     FightStatisticsModule,
+
+    DashboardModule,
 
   ],
 })

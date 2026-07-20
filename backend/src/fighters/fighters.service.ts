@@ -19,54 +19,86 @@ export class FightersService {
     private readonly fighterRepository: Repository<Fighter>,
   ) {}
 
-  async create(dto: CreateFighterDto) {
+  async create(
+    dto: CreateFighterDto,
+  ): Promise<Fighter> {
     const fighter = this.fighterRepository.create(dto);
+
     return this.fighterRepository.save(fighter);
   }
 
-  async findAll(search?: string) {
-    if (!search) {
-      return this.fighterRepository.find();
+  async findAll(
+    search?: string,
+  ): Promise<Fighter[]> {
+    const normalizedSearch = search?.trim();
+
+    const queryBuilder =
+      this.fighterRepository.createQueryBuilder('fighter');
+
+    if (normalizedSearch) {
+      queryBuilder.where(
+        `
+          fighter.name ILIKE :search
+          OR fighter.nickname ILIKE :search
+          OR fighter.country ILIKE :search
+          OR fighter.fightingStyle ILIKE :search
+          OR fighter.stance ILIKE :search
+        `,
+        {
+          search: `%${normalizedSearch}%`,
+        },
+      );
     }
 
-    return this.fighterRepository
-      .createQueryBuilder('fighter')
-      .where('LOWER(fighter.name) LIKE LOWER(:search)', {
-        search: `%${search}%`,
-      })
-      .orWhere('LOWER(fighter.nickname) LIKE LOWER(:search)', {
-        search: `%${search}%`,
-      })
-      .orWhere('LOWER(fighter.country) LIKE LOWER(:search)', {
-        search: `%${search}%`,
-      })
-      .orWhere('LOWER(fighter.fightingStyle) LIKE LOWER(:search)', {
-        search: `%${search}%`,
-      })
+    return queryBuilder
+      .orderBy('fighter.champion', 'DESC')
+      .addOrderBy('fighter.interimChampion', 'DESC')
+      .addOrderBy('fighter.ranking', 'ASC')
+      .addOrderBy('fighter.name', 'ASC')
       .getMany();
   }
 
-  async findOne(id: number) {
-    const fighter = await this.fighterRepository.findOne({
-      where: { id },
-    });
+  async findOne(
+    id: number,
+  ): Promise<Fighter> {
+    const fighter =
+      await this.fighterRepository.findOne({
+        where: {
+          id,
+        },
+      });
 
     if (!fighter) {
-      throw new NotFoundException('Fighter not found');
+      throw new NotFoundException(
+        `Fighter with ID ${id} was not found`,
+      );
     }
 
     return fighter;
   }
 
-  async update(id: number, dto: UpdateFighterDto) {
-    await this.findOne(id);
+  async update(
+    id: number,
+    dto: UpdateFighterDto,
+  ): Promise<Fighter> {
+    const fighter =
+      await this.fighterRepository.preload({
+        id,
+        ...dto,
+      });
 
-    await this.fighterRepository.update(id, dto);
+    if (!fighter) {
+      throw new NotFoundException(
+        `Fighter with ID ${id} was not found`,
+      );
+    }
 
-    return this.findOne(id);
+    return this.fighterRepository.save(fighter);
   }
 
-  async remove(id: number) {
+  async remove(
+    id: number,
+  ): Promise<Fighter> {
     const fighter = await this.findOne(id);
 
     return this.fighterRepository.remove(fighter);

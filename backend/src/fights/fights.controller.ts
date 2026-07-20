@@ -1,103 +1,46 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   ParseIntPipe,
 } from '@nestjs/common';
 
-
 import { FightsService } from './fights.service';
-
-import { CreateFightDto } from './dto/create-fight.dto';
-
-import { UpdateFightDto } from './dto/update-fight.dto';
-
-
 
 @Controller('fights')
 export class FightsController {
+  constructor(
+    private readonly fightsService: FightsService,
+  ) {}
 
+  @Get()
+  findAll() {
+    return this.fightsService.findAll();
+  }
 
-constructor(
-private readonly fightsService:FightsService
-){}
+  @Get('fighter/:fighterId')
+  findByFighter(
+    @Param('fighterId', ParseIntPipe)
+    fighterId: number,
+  ) {
+    return this.fightsService.findByFighter(
+      fighterId,
+    );
+  }
 
+  @Get('event/:eventId')
+  findByEvent(
+    @Param('eventId', ParseIntPipe)
+    eventId: number,
+  ) {
+    return this.fightsService.findByEvent(eventId);
+  }
 
-
-@Post()
-create(
-@Body()
-dto:CreateFightDto
-){
-
-return this.fightsService.create(dto);
-
-}
-
-
-
-
-
-@Get()
-findAll(){
-
-return this.fightsService.findAll();
-
-}
-
-
-
-
-
-@Get(':id')
-findOne(
-@Param('id',ParseIntPipe)
-id:number
-){
-
-return this.fightsService.findOne(id);
-
-}
-
-
-
-
-
-@Patch(':id')
-update(
-
-@Param('id',ParseIntPipe)
-id:number,
-
-@Body()
-dto:UpdateFightDto
-
-){
-
-return this.fightsService.update(
-id,
-dto
-);
-
-}
-
-
-
-
-
-@Delete(':id')
-remove(
-@Param('id',ParseIntPipe)
-id:number
-){
-
-return this.fightsService.remove(id);
-
-}
-
-
+  @Get(':id')
+  findOne(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
+    return this.fightsService.findOne(id);
+  }
 }
