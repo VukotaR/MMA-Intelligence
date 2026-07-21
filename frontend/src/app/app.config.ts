@@ -12,13 +12,23 @@ import {
   withInterceptors
 } from '@angular/common/http';
 
-import {
-  routes
-} from './app.routes';
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+
+import { routes } from './app.routes';
 
 import {
   authInterceptor
 } from './core/interceptors/auth.interceptor';
+
+import {
+  fightersFeatureKey,
+  fightersReducer
+} from './features/fighters/pages/fighters/stats/fighters.reducer';
+
+import {
+  FightersEffects
+} from './features/fighters/pages/fighters/stats/fighters.effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -30,6 +40,14 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([
         authInterceptor
       ])
-    )
+    ),
+
+    provideStore({
+      [fightersFeatureKey]: fightersReducer
+    }),
+
+    provideEffects([
+      FightersEffects
+    ])
   ]
 };

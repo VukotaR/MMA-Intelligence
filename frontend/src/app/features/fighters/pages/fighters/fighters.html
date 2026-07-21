@@ -19,6 +19,12 @@
       Add fighter
     </button>
   </header>
+  <app-info-card
+  title="Total fighters"
+  [value]="fighters.length"
+  description="Fighters currently available in the database"
+  (cardSelected)="onInfoCardSelected($event)"
+></app-info-card>
 
   <section class="toolbar">
     <div class="search-wrapper">

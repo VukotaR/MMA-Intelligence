@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AuthService } from '../../../../core/services/auth';
+import { InfoCard } from '../../../../shared/components/info-card/info-card';
+import { Store } from '@ngrx/store';
 import {
   ChangeDetectorRef,
   Component,
@@ -9,6 +11,14 @@ import {
   OnInit,
   inject
 } from '@angular/core';
+import {
+  FightersActions
+} from '../fighters/stats/fighters.actions';
+import {
+  selectAllFighters,
+  selectFightersError,
+  selectFightersLoading
+} from '../fighters/stats/fighters.selectors';
 import {
   FormBuilder,
   FormsModule,
@@ -37,6 +47,7 @@ import {
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    InfoCard
   ],
   templateUrl: './fighters.html',
   styleUrl: './fighters.css'
@@ -48,6 +59,7 @@ export class Fighters implements OnInit, OnDestroy {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly store = inject(Store);
 
   fighters: Fighter[] = [];
 
@@ -223,18 +235,48 @@ export class Fighters implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
-    this.loadFighters();
+  this.store
+    .select(selectAllFighters)
+    .pipe(
+      takeUntil(this.destroySubject)
+    )
+    .subscribe((fighters) => {
+      this.fighters = fighters;
+      this.changeDetectorRef.markForCheck();
+    });
 
-    this.searchSubject
-      .pipe(
-        debounceTime(400),
-        distinctUntilChanged(),
-        takeUntil(this.destroySubject)
-      )
-      .subscribe((search) => {
-        this.loadFighters(search);
-      });
-  }
+  this.store
+    .select(selectFightersLoading)
+    .pipe(
+      takeUntil(this.destroySubject)
+    )
+    .subscribe((loading) => {
+      this.loading = loading;
+      this.changeDetectorRef.markForCheck();
+    });
+
+  this.store
+    .select(selectFightersError)
+    .pipe(
+      takeUntil(this.destroySubject)
+    )
+    .subscribe((error) => {
+      this.errorMessage = error ?? '';
+      this.changeDetectorRef.markForCheck();
+    });
+
+  this.loadFighters();
+
+  this.searchSubject
+    .pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      takeUntil(this.destroySubject)
+    )
+    .subscribe((search) => {
+      this.loadFighters(search);
+    });
+}
 
   ngOnDestroy(): void {
     this.destroySubject.next();
@@ -259,43 +301,13 @@ export class Fighters implements OnInit, OnDestroy {
     this.loadFighters('');
   }
 
-  loadFighters(search = this.searchTerm): void {
-  this.loading = true;
-  this.errorMessage = '';
-  this.changeDetectorRef.markForCheck();
-
-  const start = Date.now();
-
-  this.fightersService
-    .getAll(search)
-    .pipe(
-      finalize(() => {
-        const elapsed = Date.now() - start;
-        const remaining = Math.max(0, 350 - elapsed);
-
-        setTimeout(() => {
-          this.loading = false;
-          this.changeDetectorRef.markForCheck();
-        }, remaining);
-      }),
-      takeUntil(this.destroySubject)
-    )
-    .subscribe({
-      next: (fighters: Fighter[]) => {
-        this.fighters = fighters;
-        this.changeDetectorRef.markForCheck();
-      },
-
-      error: (error: unknown) => {
-        console.error('Fighters loading error:', error);
-
-        this.errorMessage =
-          'Fighters could not be loaded. Please try again.';
-
-        this.changeDetectorRef.markForCheck();
-      }
-    });
-  } 
+ loadFighters(search = this.searchTerm): void {
+  this.store.dispatch(
+    FightersActions.loadFighters({
+      search
+    })
+  );
+}
 
   addFighter(): void {
     this.editingFighter = null;
@@ -728,6 +740,9 @@ get filteredFighters(): Fighter[] {
   });
 
   return fighters;
+}
+onInfoCardSelected(title: string): void {
+  console.log(`Selected card: ${title}`);
 }
 isAdmin(): boolean {
   return this.authService.isAdmin();

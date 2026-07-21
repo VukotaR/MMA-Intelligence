@@ -1,0 +1,36 @@
+.info-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.info-card-title {
+  margin-bottom: 8px;
+  color: #777;
+  font-size: 14px;
+}
+
+.info-card-value {
+  color: #222;
+  font-size: 28px;
+}
+
+.info-card-description {
+  margin-top: 8px;
+  color: #888;
+  font-size: 13px;
+}

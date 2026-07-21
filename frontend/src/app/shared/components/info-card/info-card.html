@@ -1,0 +1,20 @@
+<button
+  class="info-card"
+  type="button"
+  (click)="selectCard()"
+>
+  <span class="info-card-title">
+    {{ title }}
+  </span>
+
+  <strong class="info-card-value">
+    {{ value }}
+  </strong>
+
+  <span
+    *ngIf="description"
+    class="info-card-description"
+  >
+    {{ description }}
+  </span>
+</button>
