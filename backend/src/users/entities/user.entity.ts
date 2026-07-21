@@ -1,6 +1,7 @@
-import { Entity, Column, Index } from 'typeorm';
+import { Entity, Column, Index, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Role } from '../../common/enums/role.enum';
+import { Club } from '../../clubs/entities/club.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -37,4 +38,10 @@ export class User extends BaseEntity {
     default: true,
   })
   isActive: boolean;
+
+  @OneToMany(
+  () => Club,
+  club => club.coach
+)
+coachedClubs: Club[];
 }

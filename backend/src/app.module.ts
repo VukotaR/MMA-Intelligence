@@ -13,6 +13,7 @@ import { FightsModule } from './fights/fights.module';
 import { AnalysisModule } from './analysis/analysis.module';
 import { FightStatisticsModule } from './fight-statistics/fight-statistics.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ClubsModule } from './clubs/clubs.module';
 
 
 @Module({
@@ -29,6 +30,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AuthModule,
 
     FightersModule,
+    
+    ClubsModule,
 
     OrganizationsModule,
 
@@ -44,4 +47,4 @@ import { DashboardModule } from './dashboard/dashboard.module';
 
   ],
 })
-export class AppModule {}
+export class AppModule { }

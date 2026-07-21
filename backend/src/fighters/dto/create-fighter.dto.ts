@@ -4,10 +4,13 @@ import {
   IsOptional,
   IsBoolean,
   IsUrl,
+  IsEnum,
   Min,
   Max,
   MinLength,
 } from 'class-validator';
+
+import { WeightClass } from '../enums/weight-class.enum';
 
 export class CreateFighterDto {
 
@@ -37,6 +40,10 @@ export class CreateFighterDto {
   @Min(45)
   @Max(180)
   weight: number;
+
+  @IsOptional()
+@IsEnum(WeightClass)
+weightClass?: WeightClass;
 
   @IsOptional()
   @IsNumber()

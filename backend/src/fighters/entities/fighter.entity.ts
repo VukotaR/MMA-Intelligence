@@ -1,6 +1,8 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { WeightClass } from '../enums/weight-class.enum';
+import { Club } from '../../clubs/entities/club.entity';
+
 
 @Entity('fighters')
 export class Fighter extends BaseEntity {
@@ -128,5 +130,15 @@ weightClass: WeightClass;
     default: false,
   })
   interimChampion: boolean;
+
+  @ManyToOne(
+  () => Club,
+  club => club.fighters,
+  {
+    nullable: true,
+    onDelete: 'SET NULL'
+  }
+)
+club: Club | null;
 
 }
