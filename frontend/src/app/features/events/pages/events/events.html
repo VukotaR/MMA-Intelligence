@@ -1,0 +1,451 @@
+<section class="events-page">
+  <header class="page-header">
+    <div>
+      <button
+        type="button"
+        class="back-button"
+        (click)="goBack()"
+      >
+        ← Back
+      </button>
+
+      <p class="eyebrow">
+        MMA Intelligence
+      </p>
+
+      <h1>Events</h1>
+
+      <p class="page-description">
+        Recent and upcoming MMA Events all over the globe.
+      </p>
+    </div>
+
+    <button
+  *ngIf="isAdmin()"
+  type="button"
+  class="add-event-button"
+  (click)="openCreateForm()"
+>
+      <span>＋</span>
+      Add Event
+    </button>
+  </header>
+
+  <div
+    *ngIf="successMessage"
+    class="notification success"
+  >
+    {{ successMessage }}
+  </div>
+
+  <div
+    *ngIf="errorMessage && !loading"
+    class="notification error"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div class="status-filters">
+    <button
+      type="button"
+      [class.active]="selectedStatus === 'ALL'"
+      (click)="filterByStatus('ALL')"
+    >
+      All
+    </button>
+
+    <button
+      type="button"
+      [class.active]="selectedStatus === 'UPCOMING'"
+      (click)="filterByStatus('UPCOMING')"
+    >
+      Upcoming
+    </button>
+
+    <button
+      type="button"
+      [class.active]="selectedStatus === 'COMPLETED'"
+      (click)="filterByStatus('COMPLETED')"
+    >
+      Finished
+    </button>
+
+    <button
+      type="button"
+      [class.active]="selectedStatus === 'CANCELLED'"
+      (click)="filterByStatus('CANCELLED')"
+    >
+      Canceled
+    </button>
+  </div>
+
+  <div
+    *ngIf="loading"
+    class="state-message"
+  >
+    Loading events...
+  </div>
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      filteredEvents.length === 0
+    "
+    class="state-message"
+  >
+    No events for selected filter.
+  </div>
+
+  <div
+    *ngIf="
+      !loading &&
+      filteredEvents.length > 0
+    "
+    class="events-grid"
+  >
+    <article
+      *ngFor="let event of filteredEvents"
+      class="event-card"
+      tabindex="0"
+      role="button"
+      (click)="openEvent(event.id)"
+      (keydown.enter)="openEvent(event.id)"
+    >
+      <div class="poster-container">
+        <img
+          *ngIf="
+            getPosterUrl(event) as posterUrl;
+            else posterPlaceholder
+          "
+          [src]="posterUrl"
+          [alt]="event.name"
+          class="event-poster"
+        />
+
+        <ng-template #posterPlaceholder>
+          <div class="poster-placeholder">
+            <span>
+              {{
+                event.organization?.abbreviation ||
+                event.organization?.name ||
+                'MMA'
+              }}
+            </span>
+          </div>
+        </ng-template>
+
+        <span
+          class="status-badge"
+          [attr.data-status]="event.status"
+        >
+          {{ getStatusLabel(event.status) }}
+        </span>
+
+        <button
+  *ngIf="isAdmin()"
+  type="button"
+  class="edit-action"
+  title="Izmeni događaj"
+  (click)="openEditForm(event, $event)"
+>
+            ✎
+          </button>
+
+          <button
+  *ngIf="isAdmin()"
+  type="button"
+  class="delete-action"
+  title="Obriši događaj"
+  (click)="openDeleteModal(event, $event)"
+>
+            🗑
+          </button>
+        </div>
+
+      <div class="event-content">
+        <div class="event-organization">
+          {{
+            event.organization?.name ||
+            'MMA organizacija'
+          }}
+        </div>
+
+        <h2>{{ event.name }}</h2>
+
+        <div class="event-meta">
+          <div>
+            <span class="meta-label">
+              Date
+            </span>
+
+            <strong>
+              {{ getEventDate(event) }}
+            </strong>
+
+            <span *ngIf="getEventTime(event)">
+              {{ getEventTime(event) }}
+            </span>
+          </div>
+
+          <div>
+            <span class="meta-label">
+              Location
+            </span>
+
+            <strong>
+              {{ getLocation(event) }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="event-footer">
+          <span>
+            {{ event.fights?.length || 0 }}
+            fights
+          </span>
+
+          <span class="details-text">
+           Open event →
+          </span>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Add/Edit modal -->
+
+<div
+  *ngIf="formVisible && isAdmin()"
+  class="modal-backdrop"
+  (click)="closeForm()"
+>
+  <section
+    class="event-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">
+          Event management
+        </p>
+
+        <h2>
+          {{
+            editingEvent
+              ? 'Edit event'
+              : 'Add event'
+          }}
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="close-button"
+        (click)="closeForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <form
+      [formGroup]="eventForm"
+      (ngSubmit)="submitEvent()"
+    >
+      <div class="form-grid">
+        <label class="full-width">
+          <span>Event name *</span>
+
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="UFC 320"
+          />
+        </label>
+
+        <label>
+          <span>Organization *</span>
+
+          <select formControlName="organizationId">
+            <option [ngValue]="null">
+              Choose organization
+            </option>
+
+            <option
+              *ngFor="
+                let organization of organizations
+              "
+              [ngValue]="organization.id"
+            >
+              {{ organization.name }}
+            </option>
+          </select>
+        </label>
+
+        <label>
+          <span>Date and Time *</span>
+
+          <input
+            type="datetime-local"
+            formControlName="date"
+          />
+        </label>
+
+        <label>
+          <span>City *</span>
+
+          <input
+            type="text"
+            formControlName="city"
+            placeholder="Las Vegas"
+          />
+        </label>
+
+        <label>
+          <span>Country *</span>
+
+          <input
+            type="text"
+            formControlName="country"
+            placeholder="United States"
+          />
+        </label>
+
+        <label>
+          <span>Location / Arena</span>
+
+          <input
+            type="text"
+            formControlName="venue"
+            placeholder="T-Mobile Arena"
+          />
+        </label>
+
+        <label>
+          <span>Status *</span>
+
+          <select formControlName="status">
+            <option value="UPCOMING">
+              Upcoming
+            </option>
+
+            <option value="COMPLETED">
+              Finished
+            </option>
+
+            <option value="CANCELLED">
+             Canceled
+            </option>
+          </select>
+        </label>
+
+        <label class="full-width">
+          <span>Poster URL</span>
+
+          <input
+            type="url"
+            formControlName="poster"
+            placeholder="https://..."
+          />
+        </label>
+
+        <label class="full-width">
+          <span>Description</span>
+
+          <textarea
+            rows="5"
+            formControlName="description"
+            placeholder="Opis događaja..."
+          ></textarea>
+        </label>
+      </div>
+
+      <p
+        *ngIf="formErrorMessage"
+        class="form-error"
+      >
+        {{ formErrorMessage }}
+      </p>
+
+      <footer class="modal-footer">
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="saving"
+          (click)="closeForm()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="saving"
+        >
+          {{
+            saving
+              ? 'Saving...'
+              : editingEvent
+                ? 'Save changes'
+                : 'Add event'
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<!-- Delete modal -->
+
+<div
+  *ngIf="deleteModalVisible && isAdmin()"
+  class="modal-backdrop"
+  (click)="closeDeleteModal()"
+>
+  <section
+    class="delete-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="delete-icon">
+      !
+    </div>
+
+    <h2>Delete event?</h2>
+
+    <p>
+      Are you sure you wanna delete event?
+      <strong>
+        {{ eventToDelete?.name }}
+      </strong>?
+    </p>
+
+    <p class="delete-warning">
+      Event that has fights cant be deleted until fights are removed.
+    </p>
+
+    <footer class="modal-footer">
+      <button
+        type="button"
+        class="secondary-button"
+        [disabled]="deleting"
+        (click)="closeDeleteModal()"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        class="danger-button"
+        [disabled]="deleting"
+        (click)="confirmDelete()"
+      >
+        {{
+          deleting
+            ? 'Deleting...'
+            : 'Delete event'
+        }}
+      </button>
+    </footer>
+  </section>
+</div>

@@ -1,0 +1,700 @@
+<div class="dashboard-layout">
+  <aside class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <div class="sidebar-header">
+      <div class="logo-mark">
+        MI
+      </div>
+
+      <div>
+        <h1>MMA Intelligence</h1>
+        <p>Fight analytics platform</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-navigation">
+      <p class="navigation-title">
+        Main menu
+      </p>
+
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{
+          exact: true
+        }" (click)="closeSidebar()">
+        <span class="nav-icon">⌂</span>
+        <span>Dashboard</span>
+      </a>
+
+      <a routerLink="/fighters" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">🥊</span>
+        <span>Fighters</span>
+      </a>
+
+      <a routerLink="/events" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">▣</span>
+        <span>Events</span>
+      </a>
+
+      <a routerLink="/clubs" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">⌂</span>
+
+        <span>
+          {{
+          authService.isCoach()
+          ? 'My Club'
+          : 'Clubs'
+          }}
+        </span>
+      </a>
+
+      <a routerLink="/compare" routerLinkActive="active" (click)="closeSidebar()">
+        <span class="nav-icon">◫</span>
+        <span>Fight Analysis</span>
+      </a>
+
+      <ng-container *ngIf="authService.isAdmin()">
+        <p class="navigation-title admin-navigation-title">
+          Administration
+        </p>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">
+          {{ userInitial }}
+        </div>
+
+        <div class="user-details">
+          <strong>
+            {{ roleLabel }}
+          </strong>
+
+          <span>
+            {{ userEmail }}
+          </span>
+        </div>
+      </div>
+
+      <button class="sidebar-logout" type="button" (click)="logout()">
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" [class.visible]="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-button" type="button" aria-label="Open navigation" (click)="toggleSidebar()">
+          ☰
+        </button>
+
+        <div>
+          <p class="eyebrow">
+            Overview
+          </p>
+
+          <h2>Dashboard</h2>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="topbar-user">
+          <div class="topbar-avatar">
+            {{ userInitial }}
+          </div>
+
+          <div>
+            <strong>
+              {{ userEmail }}
+            </strong>
+
+            <span>
+              {{ roleLabel }}
+            </span>
+          </div>
+        </div>
+
+        <button class="logout-button" type="button" (click)="logout()">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <section class="dashboard-content">
+      <div class="welcome-section">
+        <div>
+          <p class="eyebrow">
+            MMA Intelligence platform
+          </p>
+
+          <h3>
+            {{ welcomeTitle }}
+          </h3>
+
+          <p>
+            {{ welcomeDescription }}
+          </p>
+        </div>
+
+        <button *ngIf="authService.isAdmin()" class="primary-action" type="button" routerLink="/clubs">
+          Manage clubs
+          <span>→</span>
+        </button>
+
+        <button *ngIf="authService.isCoach()" class="primary-action" type="button" routerLink="/clubs">
+          Open my club
+          <span>→</span>
+        </button>
+
+        <button *ngIf="authService.isUser()" class="primary-action" type="button" routerLink="/fighters">
+          Browse fighters
+          <span>→</span>
+        </button>
+      </div>
+
+      <!-- ADMINISTRATOR DASHBOARD -->
+
+      <ng-container *ngIf="authService.isAdmin()">
+        <section
+  *ngIf="statisticsLoading"
+  class="dashboard-loading"
+>
+  <span class="loading-spinner"></span>
+  Loading dashboard statistics...
+</section>
+
+<div
+  *ngIf="statisticsError"
+  class="dashboard-error"
+>
+  {{ statisticsError }}
+
+  <button
+    type="button"
+    (click)="loadDashboardStatistics()"
+  >
+    Try again
+  </button>
+</div>
+
+<section class="stats-grid admin-stats-grid">
+  <article class="stat-card">
+    <div class="stat-card-header">
+      <div class="stat-icon">🥊</div>
+
+      <span class="stat-change neutral">
+        Database
+      </span>
+    </div>
+
+    <p>Total fighters</p>
+
+    <strong>
+      {{ statistics.fighters }}
+    </strong>
+
+    <span class="stat-description">
+      Registered fighter profiles
+    </span>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-card-header">
+      <div class="stat-icon">⚔</div>
+
+      <span class="stat-change neutral">
+        {{ statistics.completedFights }} completed
+      </span>
+    </div>
+
+    <p>Total fights</p>
+
+    <strong>
+      {{ statistics.fights }}
+    </strong>
+
+    <span class="stat-description">
+      {{ statistics.scheduledFights }}
+      scheduled matchups
+    </span>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-card-header">
+      <div class="stat-icon">▣</div>
+
+      <span class="stat-change positive">
+        {{ statistics.upcomingEvents }} upcoming
+      </span>
+    </div>
+
+    <p>Total events</p>
+
+    <strong>
+      {{ statistics.events }}
+    </strong>
+
+    <span class="stat-description">
+      {{ statistics.completedEvents }}
+      completed events
+    </span>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-card-header">
+      <div class="stat-icon">◆</div>
+
+      <span class="stat-change neutral">
+        Active
+      </span>
+    </div>
+
+    <p>Organizations</p>
+
+    <strong>
+      {{ statistics.organizations }}
+    </strong>
+
+    <span class="stat-description">
+      Registered MMA organizations
+    </span>
+  </article>
+
+  <article class="stat-card analysis-stat-card">
+    <div class="stat-card-header">
+      <div class="stat-icon">AI</div>
+
+      <span class="stat-change positive">
+        {{ statistics.publishedAnalyses }} published
+      </span>
+    </div>
+
+    <p>Coach game plans</p>
+
+    <strong>
+      {{ statistics.analyses }}
+    </strong>
+
+    <span class="stat-description">
+      {{ statistics.draftAnalyses }}
+      draft analyses
+    </span>
+  </article>
+</section>
+
+        <section class="dashboard-grid">
+          <article class="panel activity-panel">
+  <div class="panel-header">
+    <div>
+      <p class="panel-eyebrow">
+        Activity
+      </p>
+
+      <h4>Events by month</h4>
+    </div>
+  </div>
+
+  <div class="chart-placeholder">
+    <div class="chart-bars">
+      <span
+        *ngFor="
+          let month of activityMonths;
+          trackBy: trackActivityMonth
+        "
+        [style.height.%]="month.height"
+        [attr.title]="
+          month.label +
+          ': ' +
+          month.count +
+          ' events'
+        "
+      >
+        <small>
+          {{ month.count }}
+        </small>
+      </span>
+    </div>
+
+    <div class="chart-labels">
+      <span
+        *ngFor="
+          let month of activityMonths;
+          trackBy: trackActivityMonth
+        "
+      >
+        {{ month.label }}
+      </span>
+    </div>
+  </div>
+          </article>
+
+          <article class="panel quick-actions-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">
+                  Administration
+                </p>
+
+                <h4>Quick actions</h4>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+              <a routerLink="/clubs">
+                <div class="quick-action-icon">
+                  +
+                </div>
+
+                <div>
+                  <strong>Manage clubs</strong>
+
+                  <span>
+                    Create, edit and delete clubs
+                  </span>
+                </div>
+
+                <span class="quick-action-arrow">
+                  →
+                </span>
+              </a>
+
+              <a routerLink="/fighters">
+                <div class="quick-action-icon">
+                  +
+                </div>
+
+                <div>
+                  <strong>Manage fighters</strong>
+
+                  <span>
+                    Create and edit fighter profiles
+                  </span>
+                </div>
+
+                <span class="quick-action-arrow">
+                  →
+                </span>
+              </a>
+
+              <a routerLink="/events">
+                <div class="quick-action-icon">
+                  +
+                </div>
+
+                <div>
+                  <strong>Manage events</strong>
+
+                  <span>
+                    Create and schedule MMA events
+                  </span>
+                </div>
+
+                <span class="quick-action-arrow">
+                  →
+                </span>
+              </a>
+
+              <a routerLink="/compare">
+                <div class="quick-action-icon">
+                  AI
+                </div>
+
+                <div>
+                  <strong>Fight analysis</strong>
+
+                  <span>
+                    Compare fighters and generate predictions
+                  </span>
+                </div>
+
+                <span class="quick-action-arrow">
+                  →
+                </span>
+              </a>
+            </div>
+          </article>
+        </section>
+      </ng-container>
+
+      <!-- COACH DASHBOARD -->
+
+      <ng-container *ngIf="authService.isCoach()">
+        <section class="stats-grid coach-stats-grid">
+  <a
+    routerLink="/fighters"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">🥊</div>
+
+      <span class="stat-change neutral">
+        Fighters
+      </span>
+    </div>
+
+    <p>Fighter database</p>
+
+    <strong>
+      {{ statistics.fighters }}
+    </strong>
+
+    <span class="stat-description">
+      Available fighter profiles
+    </span>
+  </a>
+
+  <a
+    routerLink="/events"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">▣</div>
+
+      <span class="stat-change positive">
+        {{ statistics.upcomingEvents }} upcoming
+      </span>
+    </div>
+
+    <p>Total events</p>
+
+    <strong>
+      {{ statistics.events }}
+    </strong>
+
+    <span class="stat-description">
+      Scheduled and completed events
+    </span>
+  </a>
+
+  <a
+    routerLink="/compare"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">AI</div>
+
+      <span class="stat-change positive">
+        Game plans
+      </span>
+    </div>
+
+    <p>Coach analyses</p>
+
+    <strong>
+      {{ statistics.analyses }}
+    </strong>
+
+    <span class="stat-description">
+      {{ statistics.publishedAnalyses }} published,
+      {{ statistics.draftAnalyses }} drafts
+    </span>
+  </a>
+
+  <a
+    routerLink="/events"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">⚔</div>
+
+      <span class="stat-change neutral">
+        Fights
+      </span>
+    </div>
+
+    <p>Total matchups</p>
+
+    <strong>
+      {{ statistics.fights }}
+    </strong>
+
+    <span class="stat-description">
+      {{ statistics.scheduledFights }}
+      scheduled fights
+    </span>
+  </a>
+</section>
+
+        <section class="dashboard-grid">
+          <article class="panel coach-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">
+                  Coaching tools
+                </p>
+
+                <h4>Prepare your team</h4>
+              </div>
+            </div>
+
+            <div class="coach-tools">
+              <a routerLink="/clubs">
+                <span class="coach-tool-icon">
+                  ⌂
+                </span>
+
+                <div>
+                  <strong>My Club</strong>
+
+                  <p>
+                    Update club data and remove fighters
+                    from your roster.
+                  </p>
+                </div>
+              </a>
+
+              <a routerLink="/compare">
+                <span class="coach-tool-icon">
+                  ◫
+                </span>
+
+                <div>
+                  <strong>Fight Analysis</strong>
+
+                  <p>
+                    Compare your fighter against an opponent.
+                  </p>
+                </div>
+              </a>
+
+              <a routerLink="/events">
+                <span class="coach-tool-icon">
+                  ▣
+                </span>
+
+                <div>
+                  <strong>Events</strong>
+
+                  <p>
+                    Review upcoming and completed events.
+                  </p>
+                </div>
+              </a>
+            </div>
+          </article>
+
+          <article class="panel coach-permissions-panel">
+            <div class="panel-header">
+              <div>
+                <p class="panel-eyebrow">
+                  Permissions
+                </p>
+
+                <h4>Coach access</h4>
+              </div>
+            </div>
+
+            <div class="permission-list">
+              <div class="permission-item allowed">
+                <span>✓</span>
+                Edit your club
+              </div>
+
+              <div class="permission-item allowed">
+                <span>✓</span>
+                Remove fighters from your club
+              </div>
+
+              <div class="permission-item denied">
+                <span>×</span>
+                Create or delete clubs
+              </div>
+
+              <div class="permission-item denied">
+                <span>×</span>
+                Add fighters to clubs
+              </div>
+            </div>
+          </article>
+        </section>
+      </ng-container>
+
+      <!-- REGULAR USER DASHBOARD -->
+
+      <ng-container *ngIf="authService.isUser()">
+        <section class="stats-grid user-stats-grid">
+  <a
+    routerLink="/fighters"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">🥊</div>
+    </div>
+
+    <p>Fighter database</p>
+
+    <strong>
+      {{ statistics.fighters }}
+    </strong>
+
+    <span class="stat-description">
+      Explore fighter profiles and statistics
+    </span>
+  </a>
+
+  <a
+    routerLink="/events"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">▣</div>
+
+      <span class="stat-change positive">
+        {{ statistics.upcomingEvents }} upcoming
+      </span>
+    </div>
+
+    <p>MMA events</p>
+
+    <strong>
+      {{ statistics.events }}
+    </strong>
+
+    <span class="stat-description">
+      View events and fight results
+    </span>
+  </a>
+
+  <a
+    routerLink="/compare"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">AI</div>
+    </div>
+
+    <p>Fight matchups</p>
+
+    <strong>
+      {{ statistics.fights }}
+    </strong>
+
+    <span class="stat-description">
+      Generate statistical predictions
+    </span>
+  </a>
+
+  <a
+    routerLink="/clubs"
+    class="stat-card dashboard-link-card"
+  >
+    <div class="stat-card-header">
+      <div class="stat-icon">◆</div>
+    </div>
+
+    <p>Organizations</p>
+
+    <strong>
+      {{ statistics.organizations }}
+    </strong>
+
+    <span class="stat-description">
+      Explore organizations and events
+    </span>
+  </a>
+</section>
+      </ng-container>
+    </section>
+  </main>
+</div>

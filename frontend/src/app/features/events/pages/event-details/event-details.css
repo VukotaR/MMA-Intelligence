@@ -1,0 +1,1338 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(215, 31, 50, 0.16),
+      transparent 34%
+    ),
+    #080a0f;
+  color: #f5f7fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.event-details-page {
+  width: min(1320px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 42px 0 90px;
+}
+
+.event-header {
+  margin-bottom: 48px;
+}
+
+.back-button {
+  margin-bottom: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #9da5b4;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  color: #ffffff;
+}
+
+.event-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: #d71f32;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(42px, 7vw, 78px);
+  line-height: 0.96;
+}
+
+.event-description {
+  max-width: 720px;
+  margin: 20px 0 0;
+  color: #a5adba;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.status-badge {
+  flex: 0 0 auto;
+  padding: 10px 15px;
+  border-radius: 999px;
+  background: #242a35;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-badge[data-status='UPCOMING'] {
+  background: #d71f32;
+}
+
+.status-badge[data-status='COMPLETED'] {
+  background: #228b57;
+}
+
+.status-badge[data-status='CANCELLED'] {
+  background: #596171;
+}
+
+.event-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 16px;
+  margin-top: 34px;
+}
+
+.info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 20px;
+  border: 1px solid #242936;
+  border-radius: 16px;
+  background: rgba(16, 19, 26, 0.9);
+}
+
+.info-label {
+  color: #727b8c;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.info-card strong {
+  font-size: 15px;
+}
+
+.fight-card-section {
+  padding-top: 12px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 48px);
+}
+
+.fight-count {
+  color: #8f98a8;
+  font-size: 14px;
+}
+
+.fight-group {
+  margin-bottom: 30px;
+}
+
+.group-title {
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.featured-group .group-title {
+  color: #d71f32;
+}
+
+.fight-card {
+  border: 1px solid #292f3b;
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(215, 31, 50, 0.12),
+      rgba(16, 19, 26, 0.95) 42%,
+      rgba(43, 91, 157, 0.12)
+    );
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.fight-card:hover,
+.fight-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: #d71f32;
+  outline: none;
+}
+
+.fight-card.featured {
+  display: grid;
+  grid-template-columns: 1fr 230px 1fr;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.fighter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding: 34px 26px;
+  text-align: center;
+}
+
+.fighter img,
+.fighter-placeholder {
+  width: 112px;
+  height: 112px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+}
+
+.fighter img {
+  object-fit: cover;
+  border: 3px solid #2e3440;
+}
+
+.fighter-placeholder {
+  display: grid;
+  place-items: center;
+  border: 3px solid #2e3440;
+  background: #202530;
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.corner-label {
+  margin-bottom: 17px;
+  color: #747e8f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fighter h3 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.nickname {
+  margin-top: 7px;
+  color: #919aaa;
+  font-size: 13px;
+}
+
+.winner-label {
+  margin-top: 13px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #228b57;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.fighter.winner h3 {
+  color: #70e3a5;
+}
+
+.fight-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border-right: 1px solid #292f3b;
+  border-left: 1px solid #292f3b;
+  background: rgba(6, 8, 13, 0.62);
+  text-align: center;
+}
+
+.title-fight {
+  padding: 6px 10px;
+  border: 1px solid rgba(224, 174, 70, 0.5);
+  border-radius: 999px;
+  color: #f1c45e;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.versus {
+  color: #d71f32;
+  font-size: 34px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.fight-center strong {
+  font-size: 14px;
+}
+
+.fight-center > span:not(.title-fight):not(.fight-status) {
+  color: #9099a8;
+  font-size: 12px;
+}
+
+.fight-status {
+  margin-top: 7px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #2a303b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.fight-status[data-status='COMPLETED'] {
+  background: #228b57;
+}
+
+.fight-status[data-status='SCHEDULED'] {
+  background: #d71f32;
+}
+
+.fight-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 5px;
+  color: #9fa8b7;
+  font-size: 11px;
+}
+
+.fight-result strong {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.fight-row {
+  display: grid;
+  grid-template-columns: 1fr 170px 1fr;
+  align-items: center;
+  gap: 18px;
+  min-height: 96px;
+  padding: 18px 24px;
+  border: 1px solid #242936;
+  border-radius: 16px;
+  background: #10131a;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.fight-row + .fight-row {
+  margin-top: 10px;
+}
+
+.fight-row:hover,
+.fight-row:focus-visible {
+  transform: translateX(4px);
+  border-color: #d71f32;
+  background: #141820;
+  outline: none;
+}
+
+.fighter-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fighter-name.left {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.fighter-name.right {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.fighter-name strong {
+  font-size: 16px;
+}
+
+.fighter-name > span:not(.small-winner) {
+  color: #7f8999;
+  font-size: 12px;
+}
+
+.small-winner {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #228b57;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.fight-row-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.fight-row-center > span {
+  color: #d71f32;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.fight-row-center small {
+  color: #838d9d;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.empty-fight-card,
+.state-message {
+  padding: 72px 20px;
+  border: 1px solid #242936;
+  border-radius: 20px;
+  background: #10131a;
+  color: #9ea7b6;
+  text-align: center;
+}
+
+.state-message.error {
+  color: #ff9ba6;
+}
+
+.state-message button {
+  margin-top: 16px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #d71f32;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .event-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fight-card.featured {
+    grid-template-columns: 1fr;
+  }
+
+  .fight-center {
+    border-top: 1px solid #292f3b;
+    border-right: none;
+    border-bottom: 1px solid #292f3b;
+    border-left: none;
+  }
+
+  .fight-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 22px;
+  }
+
+  .fighter-name.left,
+  .fighter-name.right {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 650px) {
+  .event-details-page {
+    width: min(100% - 28px, 1320px);
+    padding-top: 26px;
+  }
+
+  .event-header-content,
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+
+  .fighter {
+    padding: 28px 18px;
+  }
+}
+.fighter-row-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fighter-name.left .fighter-row-content {
+  justify-content: flex-end;
+}
+
+.fighter-name.right .fighter-row-content {
+  justify-content: flex-start;
+}
+
+.fighter-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fighter-text span {
+  color: #7f8999;
+  font-size: 12px;
+}
+
+.fighter-row-image,
+.fighter-row-placeholder {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  border: 2px solid #2e3440;
+  border-radius: 50%;
+}
+
+.fighter-row-image {
+  object-fit: cover;
+  object-position: top center;
+}
+
+.fighter-row-placeholder {
+  display: grid;
+  place-items: center;
+  background: #202530;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.fight-winner strong {
+  color: #70e3a5;
+}
+
+.row-versus {
+  color: #d71f32;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.row-status {
+  margin-top: 5px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #2a303b;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.row-status[data-status='COMPLETED'] {
+  background: #228b57;
+}
+
+.row-status[data-status='SCHEDULED'] {
+  background: #d71f32;
+}
+
+.row-status[data-status='CANCELLED'] {
+  background: #596171;
+}
+
+.row-title-fight {
+  padding: 5px 9px;
+  border: 1px solid rgba(224, 174, 70, 0.5);
+  border-radius: 999px;
+  color: #f1c45e;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.row-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 5px;
+  color: #9fa8b7;
+  font-size: 11px;
+  text-align: center;
+}
+
+.row-result strong {
+  color: #ffffff;
+  font-size: 12px;
+}
+/* =======================================================
+   ADD FIGHT
+======================================================= */
+
+.fight-heading-actions{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.add-fight-button{
+    border:none;
+    background:#d20a11;
+    color:white;
+    padding:11px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.25s;
+}
+
+.add-fight-button:hover{
+    background:#b1080f;
+    transform:translateY(-2px);
+}
+
+.success-message{
+    margin-top:18px;
+    padding:14px;
+    border-radius:12px;
+    background:#d7ffe4;
+    color:#147b3d;
+    font-weight:600;
+}
+
+/* =======================================================
+   MODAL
+======================================================= */
+
+.fight-modal-backdrop{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.65);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    z-index:5000;
+
+    padding:40px;
+
+    overflow:auto;
+
+}
+
+.fight-modal{
+
+    width:min(1100px,100%);
+
+    background:white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:0 30px 80px rgba(0,0,0,.35);
+
+    animation:modalAppear .25s ease;
+
+}
+
+@keyframes modalAppear{
+
+    from{
+        opacity:0;
+        transform:translateY(25px);
+    }
+
+    to{
+        opacity:1;
+        transform:none;
+    }
+
+}
+
+.fight-modal-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    padding:28px 36px;
+
+    border-bottom:1px solid #ececec;
+
+}
+
+.modal-close-button{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#efefef;
+
+    font-size:22px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.modal-close-button:hover{
+
+    background:#d20a11;
+
+    color:white;
+
+}
+
+/* =======================================================
+   FORM
+======================================================= */
+
+.fight-form{
+
+    padding:32px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:34px;
+
+}
+
+.form-section{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+}
+
+.form-section-heading{
+
+    display:flex;
+
+    gap:18px;
+
+    align-items:flex-start;
+
+}
+
+.form-section-heading span{
+
+    width:42px;
+
+    height:42px;
+
+    border-radius:50%;
+
+    background:#d20a11;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:bold;
+
+    flex-shrink:0;
+
+}
+
+.form-section-heading h3{
+
+    margin:0;
+
+    font-size:20px;
+
+}
+
+.form-section-heading p{
+
+    margin-top:6px;
+
+    color:#666;
+
+}
+
+.form-grid{
+
+    display:grid;
+
+    gap:18px;
+
+}
+
+.two-columns{
+
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+}
+
+.full-width{
+
+    grid-column:1/-1;
+
+}
+
+.form-field{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.form-field span{
+
+    font-weight:600;
+
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea{
+
+    width:100%;
+
+    padding:12px 14px;
+
+    border:1px solid #d8d8d8;
+
+    border-radius:10px;
+
+    font-size:15px;
+
+    transition:.2s;
+
+    background:white;
+
+}
+
+.form-field textarea{
+
+    resize:vertical;
+
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus{
+
+    outline:none;
+
+    border-color:#d20a11;
+
+    box-shadow:0 0 0 4px rgba(210,10,17,.12);
+
+}
+
+/* =======================================================
+   CHECKBOX
+======================================================= */
+
+.checkbox-field{
+
+    display:flex;
+
+    gap:14px;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    margin-top:8px;
+
+}
+
+.checkbox-field input{
+
+    width:18px;
+
+    height:18px;
+
+}
+
+.checkbox-field strong{
+
+    display:block;
+
+}
+
+.checkbox-field small{
+
+    display:block;
+
+    color:#666;
+
+    margin-top:3px;
+
+}
+
+/* =======================================================
+   ERROR
+======================================================= */
+
+.field-error{
+
+    color:#d20a11;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+.field-help{
+
+    color:#777;
+
+    font-size:13px;
+
+}
+
+.form-error-message{
+
+    margin:22px 32px 0;
+
+    background:#ffe3e3;
+
+    color:#b00020;
+
+    padding:14px 18px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+}
+
+.form-state-message{
+
+    padding:40px;
+
+    text-align:center;
+
+    font-size:18px;
+
+}
+
+/* =======================================================
+   BUTTONS
+======================================================= */
+
+.fight-modal-actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:14px;
+
+    padding-top:10px;
+
+}
+
+.cancel-button{
+
+    border:none;
+
+    background:#ececec;
+
+    padding:12px 24px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+}
+
+.cancel-button:hover{
+
+    background:#dcdcdc;
+
+}
+
+.save-fight-button{
+
+    border:none;
+
+    background:#d20a11;
+
+    color:white;
+
+    padding:12px 28px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+    transition:.25s;
+
+}
+
+.save-fight-button:hover{
+
+    background:#b1080f;
+
+}
+
+.save-fight-button:disabled,
+.cancel-button:disabled,
+.modal-close-button:disabled{
+
+    opacity:.6;
+
+    cursor:not-allowed;
+
+}
+
+/* =======================================================
+   MOBILE
+======================================================= */
+
+@media(max-width:900px){
+
+    .fight-modal{
+
+        width:100%;
+
+    }
+
+    .fight-modal-header{
+
+        padding:24px;
+
+    }
+
+    .fight-form{
+
+        padding:24px;
+
+    }
+
+}
+
+@media(max-width:600px){
+
+    .fight-heading-actions{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .fight-modal-backdrop{
+
+        padding:12px;
+
+    }
+
+    .fight-modal{
+
+        border-radius:14px;
+
+    }
+
+    .fight-modal-actions{
+
+        flex-direction:column;
+
+    }
+
+    .save-fight-button,
+    .cancel-button{
+
+        width:100%;
+
+    }
+
+}
+/* =======================================================
+   FIX: ADD FIGHT MODAL COLORS
+======================================================= */
+
+.fight-modal {
+  background: #111318;
+  color: #ffffff;
+}
+
+.fight-modal-header {
+  background: #16191f;
+  border-bottom-color: #2d3139;
+}
+
+.fight-modal-header h2,
+.fight-modal-header p,
+.form-section-heading h3,
+.form-section-heading p {
+  color: #ffffff;
+}
+
+.fight-modal-header p,
+.form-section-heading p {
+  color: #aeb4bf;
+}
+
+/* Brojevi 01, 02, 03, 04 */
+
+.form-section-heading > span {
+  background: #d20a11;
+  color: #ffffff;
+  border: 1px solid #f13b41;
+}
+
+/* Svaka sekcija forme */
+
+.form-section {
+  background: #191c22;
+  border: 1px solid #2d3139;
+  border-radius: 16px;
+  padding: 22px;
+}
+
+/* Labele */
+
+.form-field > span,
+.checkbox-field strong {
+  color: #f5f5f5;
+}
+
+/* Inputi, select i textarea */
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  box-sizing: border-box;
+  background: #0f1115;
+  color: #ffffff;
+  border: 1px solid #3a3f49;
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: #737a86;
+}
+
+.form-field select option {
+  background: #111318;
+  color: #ffffff;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  background: #101318;
+  color: #ffffff;
+  border-color: #e21b23;
+  box-shadow: 0 0 0 4px rgba(226, 27, 35, 0.16);
+}
+
+/* Checkbox */
+
+.checkbox-field {
+  background: #111318;
+  border: 1px solid #353a43;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.checkbox-field small,
+.field-help {
+  color: #9ba2ad;
+}
+
+/* Modal close */
+
+.modal-close-button {
+  background: #292d35;
+  color: #ffffff;
+}
+
+.modal-close-button:hover {
+  background: #d20a11;
+}
+
+/* Donji deo modala */
+
+.fight-modal-actions {
+  border-top: 1px solid #2d3139;
+  padding-top: 22px;
+}
+
+.cancel-button {
+  background: #30343d;
+  color: #ffffff;
+}
+
+.cancel-button:hover {
+  background: #414651;
+}
+
+/* Loading i greške */
+
+.form-state-message {
+  color: #ffffff;
+}
+
+.form-error-message {
+  background: rgba(210, 10, 17, 0.15);
+  color: #ff8c91;
+  border: 1px solid rgba(255, 90, 96, 0.35);
+}
+
+/* Scroll unutar modala */
+
+.fight-modal {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.fight-modal::-webkit-scrollbar {
+  width: 9px;
+}
+
+.fight-modal::-webkit-scrollbar-track {
+  background: #111318;
+}
+
+.fight-modal::-webkit-scrollbar-thumb {
+  background: #444a55;
+  border-radius: 10px;
+}
+
+.fight-row-actions {
+  display: flex;
+  align-items: right;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.featured-actions {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+}
+
+.fight-card.featured {
+  position: relative;
+}
+
+.fight-action-button {
+  border: 1px solid #3b414c;
+  border-radius: 8px;
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.fight-action-button.open {
+  background: #252a32;
+  color: #ffffff;
+}
+
+.fight-action-button.open:hover {
+  background: #343a45;
+}
+
+.fight-action-button.edit {
+  background: #d59100;
+  border-color: #d59100;
+  color: #ffffff;
+}
+
+.fight-action-button.edit:hover {
+  background: #b97d00;
+}
+
+.fight-action-button.delete {
+  background: #c81018;
+  border-color: #c81018;
+  color: #ffffff;
+}
+
+.fight-action-button.delete:hover {
+  background: #a70c13;
+}
+
+.fight-action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+  .fight-row-actions {
+    grid-column: 1 / -1;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .featured-actions {
+    position: static;
+    width: 100%;
+    justify-content: center;
+    margin-top: 20px;
+  }
+}

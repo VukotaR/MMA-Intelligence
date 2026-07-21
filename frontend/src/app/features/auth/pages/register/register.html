@@ -1,0 +1,219 @@
+<div class="login-page">
+  <div class="background-decoration decoration-one"></div>
+  <div class="background-decoration decoration-two"></div>
+
+  <main class="login-card">
+
+    <section class="branding-section">
+
+      <div class="logo-mark">MI</div>
+
+      <p class="eyebrow">
+        Professional MMA Analytics Platform
+      </p>
+
+      <h1>MMA Intelligence</h1>
+
+      <p class="description">
+        Create your account to analyze fighters, compare statistics and explore professional MMA events.
+      </p>
+
+      <div class="feature-list">
+
+        <div class="feature">
+          <span class="feature-icon">01</span>
+
+          <div>
+            <strong>Fighter Analysis</strong>
+            <p>Detailed fighter statistics and performance metrics.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">02</span>
+
+          <div>
+            <strong>Coach Game Plans</strong>
+            <p>Create and manage tactical fight strategies.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">03</span>
+
+          <div>
+            <strong>AI Predictions</strong>
+            <p>Predict fight outcomes using advanced analytics.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="form-section">
+
+      <div class="form-heading">
+        <p class="eyebrow">Join Us</p>
+        <h2>Create Account</h2>
+        <p>Create your MMA Intelligence account.</p>
+      </div>
+
+      <form
+        class="login-form"
+        [formGroup]="registerForm"
+        (ngSubmit)="register()">
+<div class="form-field">
+
+  <label>First Name</label>
+
+  <input
+    type="text"
+    formControlName="firstName"
+    placeholder="John">
+
+</div>
+
+<div class="form-field">
+
+  <label>Last Name</label>
+
+  <input
+    type="text"
+    formControlName="lastName"
+    placeholder="Doe">
+
+</div>
+        <div class="form-field">
+          <label>Username</label>
+
+          <input
+            type="text"
+            formControlName="username"
+            placeholder="john_doe">
+        </div>
+
+        <div class="form-field">
+          <label>Email Address</label>
+
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="john@example.com">
+        </div>
+
+        <div class="form-field">
+
+          <label>Password</label>
+
+          <div class="password-wrapper">
+
+            <input
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password">
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="hidePassword=!hidePassword">
+
+              {{hidePassword ? 'Show' : 'Hide'}}
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="form-field">
+
+          <label>Confirm Password</label>
+
+          <div class="password-wrapper">
+
+            <input
+              [type]="hideConfirmPassword ? 'password' : 'text'"
+              formControlName="confirmPassword">
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="hideConfirmPassword=!hideConfirmPassword">
+
+              {{hideConfirmPassword ? 'Show' : 'Hide'}}
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="form-field">
+
+          <label>Role</label>
+
+          <select formControlName="role">
+
+            <option value="USER">
+              User
+            </option>
+
+            <option value="COACH">
+              Coach
+            </option>
+
+          </select>
+
+        </div>
+
+        @if(errorMessage){
+
+        <div class="login-error">
+
+          {{errorMessage}}
+
+        </div>
+
+        }
+
+        <button
+          class="login-button"
+          [disabled]="loading">
+
+          @if(loading){
+
+          <span class="spinner"></span>
+
+          Creating Account...
+
+          } @else {
+
+          Create Account
+
+          }
+
+        </button>
+
+      </form>
+
+      <div class="register-section">
+
+        <p>
+
+          Already have an account?
+
+          <a routerLink="/login">
+
+            Sign In
+
+          </a>
+
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

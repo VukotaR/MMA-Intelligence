@@ -1,0 +1,535 @@
+<section class="club-details-page">
+  <div
+    *ngIf="loading"
+    class="state-message"
+  >
+    Loading club details...
+  </div>
+
+  <div
+    *ngIf="!loading && loadErrorMessage"
+    class="state-message error-message"
+  >
+    {{ loadErrorMessage }}
+
+    <a routerLink="/clubs">
+      Back to clubs
+    </a>
+  </div>
+
+  <ng-container
+    *ngIf="!loading && !loadErrorMessage && club"
+  >
+    <a
+      routerLink="/clubs"
+      class="back-link"
+    >
+      ← Back to clubs
+    </a>
+
+    <div
+      *ngIf="successMessage"
+      class="notification success"
+    >
+      {{ successMessage }}
+    </div>
+
+    <div
+      *ngIf="errorMessage"
+      class="notification error"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <section class="club-hero">
+      <div class="club-logo-wrapper">
+        <img
+          *ngIf="club.logo"
+          [src]="club.logo"
+          [alt]="club.name"
+          class="club-logo"
+          (error)="handleImageError($event)"
+        />
+
+        <div
+          *ngIf="!club.logo"
+          class="logo-placeholder"
+        >
+          {{ club.name.charAt(0) }}
+        </div>
+      </div>
+
+      <div class="club-main-info">
+        <span class="eyebrow">
+          MMA CLUB
+        </span>
+
+        <h1>{{ club.name }}</h1>
+
+        <p class="location">
+          {{ club.city }}, {{ club.country }}
+        </p>
+
+        <p class="description">
+          {{
+            club.description ||
+            'No description available for this club.'
+          }}
+        </p>
+
+        <div class="club-stats">
+          <div class="stat-card">
+            <span>Coach</span>
+
+            <strong>
+              {{ getCoachName() }}
+            </strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Fighters</span>
+
+            <strong>
+              {{ club.fighters?.length || 0 }}
+            </strong>
+          </div>
+        </div>
+
+        <div
+          *ngIf="canManageClub()"
+          class="club-actions"
+        >
+          <h3>Club Management</h3>
+
+          <div class="action-buttons">
+            <button
+              *ngIf="canAddFighter()"
+              type="button"
+              class="action-btn primary"
+              (click)="openAddFighterModal()"
+            >
+              + Add Fighter
+            </button>
+
+            <button
+              type="button"
+              class="action-btn"
+              (click)="openEditModal()"
+            >
+              Edit Club
+            </button>
+
+            <button
+              *ngIf="canDeleteClub()"
+              type="button"
+              class="action-btn danger"
+              [disabled]="deleting"
+              (click)="deleteClub()"
+            >
+              {{
+                deleting
+                  ? 'Deleting...'
+                  : 'Delete Club'
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="fighters-section">
+      <div class="section-header">
+        <div>
+          <span class="eyebrow">
+            TEAM ROSTER
+          </span>
+
+          <h2>Fighters</h2>
+        </div>
+
+        <span class="fighter-count">
+          {{ club.fighters?.length || 0 }}
+          fighters
+        </span>
+      </div>
+
+      <div
+        *ngIf="!club.fighters?.length"
+        class="empty-state"
+      >
+        No fighters have been assigned to this club yet.
+      </div>
+
+      <div
+        *ngIf="club.fighters?.length"
+        class="fighters-grid"
+      >
+        <article
+          *ngFor="let fighter of club.fighters"
+          class="fighter-card"
+        >
+          <div class="fighter-image-wrapper">
+            <img
+              *ngIf="fighter.image"
+              [src]="fighter.image"
+              [alt]="fighter.name"
+              class="fighter-image"
+              (error)="handleImageError($event)"
+            />
+
+            <div
+              *ngIf="!fighter.image"
+              class="fighter-placeholder"
+            >
+              {{ fighter.name.charAt(0) }}
+            </div>
+          </div>
+
+          <div class="fighter-content">
+            <span class="weight-class">
+              {{
+                fighter.weightClass ||
+                'Weight class unavailable'
+              }}
+            </span>
+
+            <h3>{{ fighter.name }}</h3>
+
+            <p *ngIf="fighter.nickname">
+              "{{ fighter.nickname }}"
+            </p>
+
+            <div class="fighter-footer">
+              <span>
+                {{
+                  fighter.country ||
+                  'Unknown country'
+                }}
+              </span>
+
+              <div class="fighter-actions">
+                <a
+                  [routerLink]="[
+                    '/fighters',
+                    fighter.id
+                  ]"
+                  class="view-profile"
+                >
+                  View profile →
+                </a>
+
+                <button
+                  *ngIf="canRemoveFighter()"
+                  type="button"
+                  class="remove-btn"
+                  [disabled]="
+                    removingFighterId ===
+                    fighter.id
+                  "
+                  (click)="
+                    removeFighter(
+                      fighter,
+                      $event
+                    )
+                  "
+                >
+                  {{
+                    removingFighterId === fighter.id
+                      ? 'Removing...'
+                      : 'Remove'
+                  }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+
+  <!-- EDIT CLUB MODAL -->
+
+  <div
+    *ngIf="showEditModal"
+    class="modal-backdrop"
+    (click)="closeEditModal()"
+  >
+    <section
+      class="club-modal"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">
+            CLUB MANAGEMENT
+          </span>
+
+          <h2>Edit Club</h2>
+        </div>
+
+        <button
+          type="button"
+          class="close-modal-button"
+          [disabled]="saving"
+          (click)="closeEditModal()"
+        >
+          ×
+        </button>
+      </div>
+
+      <form
+        class="club-form"
+        (ngSubmit)="saveClub()"
+      >
+        <label>
+          Club name
+
+          <input
+            type="text"
+            name="name"
+            [(ngModel)]="clubForm.name"
+            placeholder="Enter club name"
+            required
+          />
+        </label>
+
+        <div class="form-row">
+          <label>
+            City
+
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="clubForm.city"
+              placeholder="Enter city"
+              required
+            />
+          </label>
+
+          <label>
+            Country
+
+            <input
+              type="text"
+              name="country"
+              [(ngModel)]="clubForm.country"
+              placeholder="Enter country"
+              required
+            />
+          </label>
+        </div>
+
+        <label>
+          Logo URL
+
+          <input
+            type="url"
+            name="logo"
+            [(ngModel)]="clubForm.logo"
+            placeholder="https://..."
+          />
+        </label>
+
+        <label>
+          Description
+
+          <textarea
+            name="description"
+            [(ngModel)]="clubForm.description"
+            rows="5"
+            placeholder="Enter club description"
+          ></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="cancel-modal-button"
+            [disabled]="saving"
+            (click)="closeEditModal()"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="save-modal-button"
+            [disabled]="saving"
+          >
+            {{
+              saving
+                ? 'Saving...'
+                : 'Save Changes'
+            }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- ADD FIGHTER MODAL -->
+
+  <div
+    *ngIf="showAddFighterModal"
+    class="modal-backdrop"
+    (click)="closeAddFighterModal()"
+  >
+    <section
+      class="club-modal fighter-modal"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">
+            TEAM MANAGEMENT
+          </span>
+
+          <h2>Add Fighter</h2>
+
+          <p>
+            Select a fighter to add to
+            {{ club?.name }}.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="close-modal-button"
+          [disabled]="
+            loadingFighters ||
+            addingFighter
+          "
+          (click)="closeAddFighterModal()"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="fighter-search-box">
+        <input
+          type="text"
+          [(ngModel)]="fighterSearchTerm"
+          placeholder="Search available fighters..."
+          (keyup.enter)="searchAvailableFighters()"
+        />
+
+        <button
+          type="button"
+          class="search-fighter-button"
+          [disabled]="loadingFighters"
+          (click)="searchAvailableFighters()"
+        >
+          Search
+        </button>
+
+        <button
+          *ngIf="fighterSearchTerm"
+          type="button"
+          class="clear-fighter-button"
+          [disabled]="loadingFighters"
+          (click)="clearFighterSearch()"
+        >
+          Clear
+        </button>
+      </div>
+
+      <div
+        *ngIf="loadingFighters"
+        class="modal-state"
+      >
+        Loading fighters...
+      </div>
+
+      <div
+        *ngIf="
+          !loadingFighters &&
+          availableFighters.length === 0
+        "
+        class="modal-state"
+      >
+        No available fighters found.
+      </div>
+
+      <div
+        *ngIf="
+          !loadingFighters &&
+          availableFighters.length > 0
+        "
+        class="fighter-selection-list"
+      >
+        <label
+          *ngFor="let fighter of availableFighters"
+          class="fighter-selection-card"
+          [class.selected]="
+            selectedFighterId === fighter.id
+          "
+        >
+          <input
+            type="radio"
+            name="selectedFighter"
+            [value]="fighter.id"
+            [(ngModel)]="selectedFighterId"
+          />
+
+          <div class="selection-image">
+            <img
+              *ngIf="fighter.image"
+              [src]="fighter.image"
+              [alt]="fighter.name"
+              (error)="handleImageError($event)"
+            />
+
+            <div
+              *ngIf="!fighter.image"
+              class="selection-placeholder"
+            >
+              {{ fighter.name.charAt(0) }}
+            </div>
+          </div>
+
+          <div class="selection-info">
+            <strong>{{ fighter.name }}</strong>
+
+            <span *ngIf="fighter.nickname">
+              "{{ fighter.nickname }}"
+            </span>
+
+            <small>
+              {{ fighter.weightClass }}
+              ·
+              {{ fighter.country }}
+            </small>
+          </div>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="cancel-modal-button"
+          [disabled]="addingFighter"
+          (click)="closeAddFighterModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="save-modal-button"
+          [disabled]="
+            addingFighter ||
+            loadingFighters ||
+            !selectedFighterId
+          "
+          (click)="addFighter()"
+        >
+          {{
+            addingFighter
+              ? 'Adding...'
+              : 'Add Fighter'
+          }}
+        </button>
+      </div>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,391 @@
+<section class="clubs-page">
+  <div class="page-header">
+    <div>
+      <span class="eyebrow">
+        MMA TEAMS
+      </span>
+
+      <h1>Clubs</h1>
+
+      <p>
+        Explore MMA clubs, coaches and their fighters.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button
+        *ngIf="isAdmin()"
+        type="button"
+        class="add-club-button"
+        (click)="openAddModal()"
+      >
+        + Add Club
+      </button>
+
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search clubs..."
+          (keyup.enter)="search()"
+        />
+
+        <button
+          type="button"
+          class="search-button"
+          (click)="search()"
+        >
+          Search
+        </button>
+
+        <button
+          *ngIf="searchTerm"
+          type="button"
+          class="clear-button"
+          (click)="clearSearch()"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="successMessage"
+    class="notification success"
+  >
+    {{ successMessage }}
+  </div>
+
+  <div
+    *ngIf="errorMessage && !loading"
+    class="notification error"
+  >
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="loading"
+    class="state-message"
+  >
+    Loading clubs...
+  </div>
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      clubs.length === 0
+    "
+    class="state-message"
+  >
+    No clubs found.
+  </div>
+
+  <div
+    *ngIf="
+      !loading &&
+      clubs.length > 0
+    "
+    class="clubs-grid"
+  >
+    <article
+      *ngFor="let club of clubs"
+      class="club-card"
+    >
+      <div class="club-image">
+        <img
+          *ngIf="club.logo"
+          [src]="club.logo"
+          [alt]="club.name"
+          (error)="handleImageError($event)"
+        />
+
+        <div
+          *ngIf="!club.logo"
+          class="logo-placeholder"
+        >
+          {{ club.name.charAt(0) }}
+        </div>
+      </div>
+
+      <div class="club-content">
+        <div class="club-location">
+          {{ club.city }}, {{ club.country }}
+        </div>
+
+        <h2>{{ club.name }}</h2>
+
+        <p class="club-description">
+          {{
+            club.description ||
+            'No description available for this club.'
+          }}
+        </p>
+
+        <div class="club-info">
+          <div class="info-item">
+            <span class="info-label">
+              Coach
+            </span>
+
+            <strong>
+              {{ getCoachName(club) }}
+            </strong>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">
+              Fighters
+            </span>
+
+            <strong>
+              {{ club.fighters?.length || 0 }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a
+            class="details-link"
+            [routerLink]="[
+              '/clubs',
+              club.id
+            ]"
+          >
+            View club details
+            <span>→</span>
+          </a>
+
+          <div
+            *ngIf="isAdmin()"
+            class="admin-card-actions"
+          >
+            <button
+              type="button"
+              class="edit-button"
+              (click)="
+                openEditModal(
+                  club,
+                  $event
+                )
+              "
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="delete-button"
+              [disabled]="
+                deletingClubId === club.id
+              "
+              (click)="
+                deleteClub(
+                  club,
+                  $event
+                )
+              "
+            >
+              {{
+                deletingClubId === club.id
+                  ? 'Deleting...'
+                  : 'Delete'
+              }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ADD / EDIT CLUB MODAL -->
+
+  <div
+    *ngIf="showClubModal"
+    class="modal-backdrop"
+    (click)="closeClubModal()"
+  >
+    <section
+      class="club-modal"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-header">
+        <div>
+          <span class="eyebrow">
+            CLUB MANAGEMENT
+          </span>
+
+          <h2>
+            {{
+              editingClub
+                ? 'Edit Club'
+                : 'Add Club'
+            }}
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          class="close-modal-button"
+          [disabled]="saving"
+          (click)="closeClubModal()"
+        >
+          ×
+        </button>
+      </div>
+
+      <form
+        class="club-form"
+        (ngSubmit)="saveClub()"
+      >
+        <label>
+          Club name
+
+          <input
+            type="text"
+            name="name"
+            [(ngModel)]="clubForm.name"
+            placeholder="Enter club name"
+            required
+          />
+        </label>
+
+        <div class="form-row">
+          <label>
+            City
+
+            <input
+              type="text"
+              name="city"
+              [(ngModel)]="clubForm.city"
+              placeholder="Enter city"
+              required
+            />
+          </label>
+
+          <label>
+            Country
+
+            <input
+              type="text"
+              name="country"
+              [(ngModel)]="clubForm.country"
+              placeholder="Enter country"
+              required
+            />
+          </label>
+        </div>
+
+        <label>
+          Coach
+
+          <select
+            name="coachId"
+            [(ngModel)]="clubForm.coachId"
+            [disabled]="loadingCoaches"
+            required
+          >
+            <option
+              [ngValue]="null"
+              disabled
+            >
+              {{
+                loadingCoaches
+                  ? 'Loading coaches...'
+                  : 'Select a coach'
+              }}
+            </option>
+
+            <option
+              *ngFor="let coach of coaches"
+              [ngValue]="coach.id"
+            >
+              {{ getCoachOptionName(coach) }}
+            </option>
+          </select>
+        </label>
+
+        <div
+          *ngIf="coachErrorMessage"
+          class="form-error"
+        >
+          {{ coachErrorMessage }}
+
+          <button
+            type="button"
+            class="retry-coaches-button"
+            (click)="loadCoaches()"
+          >
+            Try again
+          </button>
+        </div>
+
+        <div
+          *ngIf="
+            !loadingCoaches &&
+            !coachErrorMessage &&
+            coaches.length === 0
+          "
+          class="form-warning"
+        >
+          No active coach accounts were found.
+          Create a user with the COACH role first.
+        </div>
+
+        <label>
+          Logo URL
+
+          <input
+            type="url"
+            name="logo"
+            [(ngModel)]="clubForm.logo"
+            placeholder="https://..."
+          />
+        </label>
+
+        <label>
+          Description
+
+          <textarea
+            name="description"
+            [(ngModel)]="clubForm.description"
+            rows="5"
+            placeholder="Enter club description"
+          ></textarea>
+        </label>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="cancel-modal-button"
+            [disabled]="saving"
+            (click)="closeClubModal()"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="save-modal-button"
+            [disabled]="
+              saving ||
+              loadingCoaches ||
+              !clubForm.coachId
+            "
+          >
+            {{
+              saving
+                ? 'Saving...'
+                : (
+                    editingClub
+                      ? 'Save Changes'
+                      : 'Create Club'
+                  )
+            }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>

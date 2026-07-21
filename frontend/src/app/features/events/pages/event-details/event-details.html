@@ -1,0 +1,1156 @@
+<section class="event-details-page">
+
+  <div *ngIf="loading" class="state-message">
+    Loading events...
+  </div>
+
+  <div
+    *ngIf="!loading && errorMessage"
+    class="state-message error"
+  >
+    <p>{{ errorMessage }}</p>
+
+    <button type="button" (click)="goBack()">
+      Back to events
+    </button>
+  </div>
+
+  <ng-container
+    *ngIf="!loading && !errorMessage && event"
+  >
+    <header class="event-header">
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="goBack()"
+      >
+        ← Back to events
+      </button>
+
+      <div class="event-header-content">
+        <div>
+          <p class="eyebrow">
+            {{
+              event.organization?.name ||
+              'MMA Intelligence'
+            }}
+          </p>
+
+          <h1>{{ event.name }}</h1>
+
+          <p
+            *ngIf="event.description"
+            class="event-description"
+          >
+            {{ event.description }}
+          </p>
+        </div>
+
+        <span
+          class="status-badge"
+          [attr.data-status]="event.status"
+        >
+          {{ getStatusLabel(event.status) }}
+        </span>
+      </div>
+
+      <div class="event-info-grid">
+
+        <div class="info-card">
+          <span class="info-label">Date</span>
+          <strong>{{ formatDate() }}</strong>
+        </div>
+
+        <div class="info-card">
+          <span class="info-label">Location</span>
+
+          <strong>
+            {{
+              getLocation() ||
+              'Location not specified'
+            }}
+          </strong>
+        </div>
+
+        <div class="info-card">
+          <span class="info-label">
+            Number of fights
+          </span>
+
+          <strong>
+            {{ event.fights?.length || 0 }}
+          </strong>
+        </div>
+
+      </div>
+    </header>
+
+    <main class="fight-card-section">
+
+     <div class="section-heading">
+  <div>
+    <p class="eyebrow">Event Card</p>
+    <h2>Fight Card</h2>
+  </div>
+
+  <div class="fight-heading-actions">
+    <span class="fight-count">
+      {{ event.fights?.length || 0 }} fights
+    </span>
+
+    <button
+  *ngIf="isAdmin()"
+  type="button"
+  class="add-fight-button"
+  (click)="openCreateFightForm()"
+>
+  + Add Fight
+</button>
+  </div>
+</div>
+
+<div
+  *ngIf="successMessage"
+  class="success-message"
+>
+  {{ successMessage }}
+</div>
+
+      <!-- MAIN EVENT -->
+
+      <section
+        *ngIf="getMainEvent() as fight"
+        class="fight-group featured-group"
+      >
+        <div class="group-title">
+          Main Event
+        </div>
+
+        <article
+          class="fight-card featured"
+          (click)="openFight(fight.id)"
+          tabindex="0"
+          role="button"
+          (keydown.enter)="openFight(fight.id)"
+        >
+
+          <!-- RED CORNER -->
+
+          <div
+            class="fighter"
+            [class.winner]="
+              isWinner(fight, fight.redCorner)
+            "
+          >
+            <span class="corner-label">
+              Red Corner
+            </span>
+
+            <img
+              *ngIf="
+                getFighterImage(fight.redCorner)
+                  as image
+              "
+              [src]="image"
+              [alt]="
+                getFighterName(fight.redCorner)
+              "
+            />
+
+            <div
+              *ngIf="
+                !getFighterImage(fight.redCorner)
+              "
+              class="fighter-placeholder"
+            >
+              {{
+                getFighterInitials(
+                  fight.redCorner
+                )
+              }}
+            </div>
+
+            <h3>
+              {{
+                getFighterName(
+                  fight.redCorner
+                )
+              }}
+            </h3>
+
+            <span
+              *ngIf="fight.redCorner.nickname"
+              class="nickname"
+            >
+              “{{ fight.redCorner.nickname }}”
+            </span>
+
+            <span
+              *ngIf="
+                isWinner(
+                  fight,
+                  fight.redCorner
+                )
+              "
+              class="winner-label"
+            >
+              Winner
+            </span>
+          </div>
+
+          <!-- RESULT -->
+
+          <div class="fight-center">
+
+            <span
+              *ngIf="fight.titleFight"
+              class="title-fight"
+            >
+              Title Fight
+            </span>
+
+            <div class="versus">VS</div>
+
+            <strong>
+              {{
+                formatWeightClass(
+                  fight.weightClass
+                )
+              }}
+            </strong>
+
+            <span>
+              {{ fight.scheduledRounds }}
+              rounds
+            </span>
+
+            <span
+              class="fight-status"
+              [attr.data-status]="fight.status"
+            >
+              {{
+                getFightStatusLabel(
+                  fight.status
+                )
+              }}
+            </span>
+
+            <div
+              *ngIf="hasResult(fight)"
+              class="fight-result"
+            >
+              <strong *ngIf="fight.method">
+                {{
+                  formatFightMethod(
+                    fight.method
+                  )
+                }}
+              </strong>
+
+              <span
+                *ngIf="fight.methodDetails"
+              >
+                {{ fight.methodDetails }}
+              </span>
+
+              <span
+                *ngIf="fight.finishedRound"
+              >
+                Round
+                {{ fight.finishedRound }}
+              </span>
+
+              <span
+                *ngIf="fight.finishedTime"
+              >
+                {{ fight.finishedTime }}
+              </span>
+            </div>
+          </div>
+
+          <!-- BLUE CORNER -->
+
+          <div
+            class="fighter"
+            [class.winner]="
+              isWinner(fight, fight.blueCorner)
+            "
+          >
+            <span class="corner-label">
+              Blue Corner
+            </span>
+
+            <img
+              *ngIf="
+                getFighterImage(fight.blueCorner)
+                  as image
+              "
+              [src]="image"
+              [alt]="
+                getFighterName(fight.blueCorner)
+              "
+            />
+
+            <div
+              *ngIf="
+                !getFighterImage(fight.blueCorner)
+              "
+              class="fighter-placeholder"
+            >
+              {{
+                getFighterInitials(
+                  fight.blueCorner
+                )
+              }}
+            </div>
+
+            <h3>
+              {{
+                getFighterName(
+                  fight.blueCorner
+                )
+              }}
+            </h3>
+
+            <span
+              *ngIf="fight.blueCorner.nickname"
+              class="nickname"
+            >
+              “{{ fight.blueCorner.nickname }}”
+            </span>
+
+            <span
+              *ngIf="
+                isWinner(
+                  fight,
+                  fight.blueCorner
+                )
+              "
+              class="winner-label"
+            >
+              Winner
+            </span>
+          </div>
+<div
+  class="fight-row-actions featured-actions"
+  (click)="$event.stopPropagation()"
+>
+  <button
+    type="button"
+    class="fight-action-button open"
+    (click)="openFight(fight.id)"
+  >
+    Open
+  </button>
+
+  <button
+  *ngIf="isAdmin()"
+    type="button"
+    class="fight-action-button edit"
+    (click)="openEditFightForm(fight, $event)"
+  >
+    Edit
+  </button>
+
+  <button
+  *ngIf="isAdmin()"
+    type="button"
+    class="fight-action-button delete"
+    [disabled]="deletingFightId === fight.id"
+    (click)="deleteFight(fight, $event)"
+  >
+    {{
+      deletingFightId === fight.id
+        ? 'Deleting...'
+        : 'Delete'
+    }}
+  </button>
+</div>
+        </article>
+      </section>
+
+      <!-- CO-MAIN EVENT -->
+
+      <section
+        *ngIf="getCoMainEvent() as fight"
+        class="fight-group"
+      >
+        <div class="group-title">
+          Co-Main Event
+        </div>
+
+        <ng-container
+          *ngTemplateOutlet="
+            fightRow;
+            context: { $implicit: fight }
+          "
+        ></ng-container>
+      </section>
+
+      <!-- MAIN CARD -->
+
+      <section
+        *ngIf="getMainCard().length > 0"
+        class="fight-group"
+      >
+        <div class="group-title">
+          Main Card
+        </div>
+
+        <ng-container
+          *ngFor="let fight of getMainCard()"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              fightRow;
+              context: { $implicit: fight }
+            "
+          ></ng-container>
+        </ng-container>
+      </section>
+
+      <!-- PRELIMS -->
+
+      <section
+        *ngIf="getPrelims().length > 0"
+        class="fight-group"
+      >
+        <div class="group-title">
+          Prelims
+        </div>
+
+        <ng-container
+          *ngFor="let fight of getPrelims()"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              fightRow;
+              context: { $implicit: fight }
+            "
+          ></ng-container>
+        </ng-container>
+      </section>
+
+      <!-- EARLY PRELIMS -->
+
+      <section
+        *ngIf="getEarlyPrelims().length > 0"
+        class="fight-group"
+      >
+        <div class="group-title">
+          Early Prelims
+        </div>
+
+        <ng-container
+          *ngFor="
+            let fight of getEarlyPrelims()
+          "
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              fightRow;
+              context: { $implicit: fight }
+            "
+          ></ng-container>
+        </ng-container>
+      </section>
+
+      <div
+        *ngIf="!event.fights?.length"
+        class="empty-fight-card"
+      >
+        Fight card is not yet available.
+      </div>
+
+    </main>
+  </ng-container>
+</section>
+<ng-template #fightRow let-fight>
+
+  <article
+    class="fight-row"
+    (click)="openFight(fight.id)"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="openFight(fight.id)"
+  >
+
+    <!-- RED CORNER -->
+
+    <div
+      class="fighter-name left"
+      [class.fight-winner]="
+        isWinner(fight, fight.redCorner)
+      "
+    >
+      <div class="fighter-row-content">
+
+        <img
+          *ngIf="
+            getFighterImage(fight.redCorner)
+              as image
+          "
+          class="fighter-row-image"
+          [src]="image"
+          [alt]="
+            getFighterName(fight.redCorner)
+          "
+        />
+
+        <div
+          *ngIf="
+            !getFighterImage(fight.redCorner)
+          "
+          class="fighter-row-placeholder"
+        >
+          {{
+            getFighterInitials(
+              fight.redCorner
+            )
+          }}
+        </div>
+
+        <div class="fighter-text">
+          <strong>
+            {{
+              getFighterName(
+                fight.redCorner
+              )
+            }}
+          </strong>
+
+          <span
+            *ngIf="fight.redCorner.nickname"
+          >
+            “{{ fight.redCorner.nickname }}”
+          </span>
+        </div>
+
+        <span
+          *ngIf="
+            isWinner(
+              fight,
+              fight.redCorner
+            )
+          "
+          class="small-winner"
+        >
+          W
+        </span>
+
+      </div>
+    </div>
+
+    <!-- RESULT -->
+
+    <div class="fight-row-center">
+
+      <span class="row-versus">VS</span>
+
+      <small>
+        {{
+          formatWeightClass(
+            fight.weightClass
+          )
+        }}
+      </small>
+
+      <small>
+        {{ fight.scheduledRounds }} rundi
+      </small>
+
+      <span
+        class="row-status"
+        [attr.data-status]="fight.status"
+      >
+        {{
+          getFightStatusLabel(
+            fight.status
+          )
+        }}
+      </span>
+
+      <span
+        *ngIf="fight.titleFight"
+        class="row-title-fight"
+      >
+        Title Fight
+      </span>
+
+      <div
+        *ngIf="hasResult(fight)"
+        class="row-result"
+      >
+        <strong *ngIf="fight.method">
+          {{
+            formatFightMethod(
+              fight.method
+            )
+          }}
+        </strong>
+
+        <span
+          *ngIf="fight.methodDetails"
+        >
+          {{ fight.methodDetails }}
+        </span>
+
+        <span
+          *ngIf="fight.finishedRound"
+        >
+          Runda {{ fight.finishedRound }}
+        </span>
+
+        <span
+          *ngIf="fight.finishedTime"
+        >
+          {{ fight.finishedTime }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- BLUE CORNER -->
+
+    <div
+      class="fighter-name right"
+      [class.fight-winner]="
+        isWinner(fight, fight.blueCorner)
+      "
+    >
+      <div class="fighter-row-content">
+
+        <span
+          *ngIf="
+            isWinner(
+              fight,
+              fight.blueCorner
+            )
+          "
+          class="small-winner"
+        >
+          W
+        </span>
+
+        <div class="fighter-text">
+          <strong>
+            {{
+              getFighterName(
+                fight.blueCorner
+              )
+            }}
+          </strong>
+
+          <span
+            *ngIf="fight.blueCorner.nickname"
+          >
+            “{{ fight.blueCorner.nickname }}”
+          </span>
+        </div>
+
+        <img
+          *ngIf="
+            getFighterImage(fight.blueCorner)
+              as image
+          "
+          class="fighter-row-image"
+          [src]="image"
+          [alt]="
+            getFighterName(fight.blueCorner)
+          "
+        />
+
+        <div
+          *ngIf="
+            !getFighterImage(fight.blueCorner)
+          "
+          class="fighter-row-placeholder"
+        >
+          {{
+            getFighterInitials(
+              fight.blueCorner
+            )
+          }}
+        </div>
+
+      </div>
+    </div>
+<div
+  class="fight-row-actions"
+  (click)="$event.stopPropagation()"
+>
+  <button
+    type="button"
+    class="fight-action-button open"
+    (click)="openFight(fight.id)"
+  >
+    Open
+  </button>
+
+  <button
+  *ngIf="isAdmin()"
+    type="button"
+    class="fight-action-button edit"
+    (click)="openEditFightForm(fight, $event)"
+  >
+    Edit
+  </button>
+
+  <button
+  *ngIf="isAdmin()"
+    type="button"
+    class="fight-action-button delete"
+    [disabled]="deletingFightId === fight.id"
+    (click)="deleteFight(fight, $event)"
+  >
+    {{
+      deletingFightId === fight.id
+        ? 'Deleting...'
+        : 'Delete'
+    }}
+  </button>
+</div>
+  </article>
+</ng-template>
+<!-- ADD FIGHT MODAL -->
+
+<div
+  *ngIf="fightFormVisible && isAdmin()"
+  class="fight-modal-backdrop"
+  (click)="closeFightForm()"
+>
+  <section
+    class="fight-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="fight-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="fight-modal-header">
+      <div>
+        <p class="eyebrow">
+          Fight Management
+        </p>
+
+        <h2 id="fight-modal-title">
+  {{ editingFight ? 'Edit Fight' : 'Add Fight' }}
+</h2>
+
+        <p>
+  {{
+    editingFight
+      ? 'Update the selected matchup.'
+      : 'Add a new matchup to ' + event?.name + '.'
+  }}
+</p>
+      </div>
+
+      <button
+        type="button"
+        class="modal-close-button"
+        aria-label="Close modal"
+        [disabled]="savingFight"
+        (click)="closeFightForm()"
+      >
+        ×
+      </button>
+    </header>
+
+    <div
+      *ngIf="fightersLoading"
+      class="form-state-message"
+    >
+      Loading fighters...
+    </div>
+
+    <div
+      *ngIf="fightFormError"
+      class="form-error-message"
+    >
+      {{ fightFormError }}
+    </div>
+
+    <form
+      *ngIf="!fightersLoading"
+      class="fight-form"
+      [formGroup]="fightForm"
+      (ngSubmit)="submitFight()"
+    >
+      <!-- FIGHTERS -->
+
+      <div class="form-section">
+        <div class="form-section-heading">
+          <span>01</span>
+
+          <div>
+            <h3>Matchup</h3>
+            <p>
+              Choose two different fighters.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid two-columns">
+          <label class="form-field">
+            <span>Red Corner *</span>
+
+            <select formControlName="redCornerId">
+              <option [ngValue]="null">
+                Select red-corner fighter
+              </option>
+
+              <option
+                *ngFor="let fighter of fighters"
+                [ngValue]="fighter.id"
+              >
+                {{ getFighterName(fighter) }}
+                <ng-container
+                  *ngIf="fighter.nickname"
+                >
+                  — “{{ fighter.nickname }}”
+                </ng-container>
+              </option>
+            </select>
+
+            <small
+              class="field-error"
+              *ngIf="
+                fightForm.get('redCornerId')?.touched &&
+                fightForm.get('redCornerId')?.invalid
+              "
+            >
+              Red-corner fighter is required.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>Blue Corner *</span>
+
+            <select formControlName="blueCornerId">
+              <option [ngValue]="null">
+                Select blue-corner fighter
+              </option>
+
+              <option
+                *ngFor="let fighter of fighters"
+                [ngValue]="fighter.id"
+              >
+                {{ getFighterName(fighter) }}
+                <ng-container
+                  *ngIf="fighter.nickname"
+                >
+                  — “{{ fighter.nickname }}”
+                </ng-container>
+              </option>
+            </select>
+
+            <small
+              class="field-error"
+              *ngIf="
+                fightForm.get('blueCornerId')?.touched &&
+                fightForm.get('blueCornerId')?.invalid
+              "
+            >
+              Blue-corner fighter is required.
+            </small>
+          </label>
+        </div>
+      </div>
+
+      <!-- FIGHT DETAILS -->
+
+      <div class="form-section">
+        <div class="form-section-heading">
+          <span>02</span>
+
+          <div>
+            <h3>Fight Details</h3>
+            <p>
+              Configure the weight class,
+              card placement and rounds.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid two-columns">
+          <label class="form-field">
+            <span>Weight Class *</span>
+
+            <select formControlName="weightClass">
+              <option
+                *ngFor="
+                  let weightClass of weightClasses
+                "
+                [value]="weightClass"
+              >
+                {{
+                  formatWeightClass(
+                    weightClass
+                  )
+                }}
+              </option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Card Position *</span>
+
+            <select formControlName="cardPosition">
+              <option
+                *ngFor="
+                  let cardPosition of cardPositions
+                "
+                [value]="cardPosition"
+              >
+                {{
+                  formatCardPosition(
+                    cardPosition
+                  )
+                }}
+              </option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Fight Status *</span>
+
+            <select formControlName="status">
+              <option
+                *ngFor="
+                  let fightStatus of fightStatuses
+                "
+                [value]="fightStatus"
+              >
+                {{
+                  getFightStatusLabel(
+                    fightStatus
+                  )
+                }}
+              </option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Scheduled Rounds *</span>
+
+            <input
+              type="number"
+              formControlName="scheduledRounds"
+              min="1"
+              max="5"
+            />
+
+            <small
+              class="field-error"
+              *ngIf="
+                fightForm.get('scheduledRounds')?.touched &&
+                fightForm.get('scheduledRounds')?.invalid
+              "
+            >
+              Enter between 1 and 5 rounds.
+            </small>
+          </label>
+
+          <label class="form-field">
+            <span>Card Order *</span>
+
+            <input
+              type="number"
+              formControlName="cardOrder"
+              min="0"
+            />
+
+            <small class="field-help">
+              Lower numbers appear first.
+            </small>
+          </label>
+
+          <label class="checkbox-field">
+            <input
+              type="checkbox"
+              formControlName="titleFight"
+            />
+
+            <span class="custom-checkbox"></span>
+
+            <span>
+              <strong>Title Fight</strong>
+              <small>
+                Mark this fight as a championship
+                matchup.
+              </small>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- COMPLETED FIGHT RESULT -->
+
+      <div
+        *ngIf="isCompletedFightSelected()"
+        class="form-section result-form-section"
+      >
+        <div class="form-section-heading">
+          <span>03</span>
+
+          <div>
+            <h3>Fight Result</h3>
+            <p>
+              Completed fights require a
+              winner and result information.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid two-columns">
+          <label class="form-field">
+            <span>Winner *</span>
+
+            <select formControlName="winnerId">
+              <option [ngValue]="null">
+                Select winner
+              </option>
+
+              <option
+                *ngFor="
+                  let fighter of
+                    getAvailableWinnerFighters()
+                "
+                [ngValue]="fighter.id"
+              >
+                {{ getFighterName(fighter) }}
+              </option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Method *</span>
+
+            <select formControlName="method">
+              <option [ngValue]="null">
+                Select result method
+              </option>
+
+              <option
+                *ngFor="
+                  let fightMethod of fightMethods
+                "
+                [value]="fightMethod"
+              >
+                {{
+                  formatFightMethod(
+                    fightMethod
+                  )
+                }}
+              </option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span>Finished Round *</span>
+
+            <input
+              type="number"
+              formControlName="finishedRound"
+              min="1"
+              [max]="
+                fightForm.get('scheduledRounds')
+                  ?.value || 5
+              "
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Finished Time *</span>
+
+            <input
+              type="text"
+              formControlName="finishedTime"
+              placeholder="Example: 04:32"
+            />
+          </label>
+
+          <label class="form-field full-width">
+            <span>Method Details</span>
+
+            <input
+              type="text"
+              formControlName="methodDetails"
+              placeholder="Example: Rear-naked choke"
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- MEDIA -->
+
+      <div class="form-section">
+        <div class="form-section-heading">
+          <span>
+            {{
+              isCompletedFightSelected()
+                ? '04'
+                : '03'
+            }}
+          </span>
+
+          <div>
+            <h3>Media and Analysis</h3>
+            <p>
+              Optional recording and analysis
+              information.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>YouTube URL</span>
+
+            <input
+              type="text"
+              formControlName="youtubeUrl"
+              placeholder="https://youtube.com/..."
+            />
+          </label>
+
+          <label class="form-field">
+            <span>Analysis Summary</span>
+
+            <textarea
+              formControlName="analysisSummary"
+              rows="4"
+              placeholder="Optional fight analysis notes..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <footer class="fight-modal-actions">
+        <button
+          type="button"
+          class="cancel-button"
+          [disabled]="savingFight"
+          (click)="closeFightForm()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="save-fight-button"
+          [disabled]="savingFight"
+        >
+         <span *ngIf="!savingFight">
+  {{ editingFight ? 'Save Changes' : 'Create Fight' }}
+</span>
+
+          <span *ngIf="savingFight">
+  {{ editingFight ? 'Saving...' : 'Creating...' }}
+</span>
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>

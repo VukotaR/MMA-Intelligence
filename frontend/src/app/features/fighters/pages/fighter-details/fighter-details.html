@@ -1,0 +1,564 @@
+<div class="fighter-details-page">
+  <header class="details-header">
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()"
+    >
+      <span>←</span>
+      Back to fighters
+    </button>
+
+    <button
+      *ngIf="fighter"
+      type="button"
+      class="edit-button"
+      (click)="editFighter()"
+    >
+      Edit fighter
+    </button>
+  </header>
+
+  <div
+    *ngIf="loading"
+    class="loading-state"
+  >
+    <div class="spinner"></div>
+    <p>Loading fighter profile...</p>
+  </div>
+
+  <div
+    *ngIf="!loading && errorMessage"
+    class="error-state"
+  >
+    <div class="error-icon">!</div>
+
+    <h2>Unable to load fighter</h2>
+
+    <p>{{ errorMessage }}</p>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="goBack()"
+    >
+      Return to fighters
+    </button>
+  </div>
+
+  <main
+    *ngIf="!loading && fighter"
+    class="fighter-profile"
+  >
+    <section class="hero-card">
+      <div class="hero-background"></div>
+
+      <div class="fighter-image-wrapper">
+        <img
+          *ngIf="fighter.image"
+          [src]="fighter.image"
+          [alt]="fighter.name"
+          class="fighter-image"
+        />
+
+        <div
+          *ngIf="!fighter.image"
+          class="fighter-image-placeholder"
+        >
+          {{ getInitials(fighter.name) }}
+        </div>
+      </div>
+
+      <div class="fighter-main-info">
+        <div class="status-row">
+          <span
+            *ngIf="fighter.champion"
+            class="status-badge champion"
+          >
+            Champion
+          </span>
+
+          <span
+            *ngIf="fighter.interimChampion && !fighter.champion"
+            class="status-badge interim"
+          >
+            Interim champion
+          </span>
+
+          <span class="ranking-badge">
+            {{ getRankingLabel() }}
+          </span>
+        </div>
+
+        <p class="eyebrow">
+          Professional MMA fighter
+        </p>
+
+        <h1>{{ fighter.name }}</h1>
+
+        <p
+          *ngIf="fighter.nickname"
+          class="nickname"
+        >
+          “{{ fighter.nickname }}”
+        </p>
+
+        <div class="hero-meta">
+          <span>{{ fighter.country }}</span>
+          <span class="meta-divider"></span>
+          <span>
+            {{ fighter.fightingStyle || 'Mixed martial arts' }}
+          </span>
+          <span class="meta-divider"></span>
+          <span>
+            {{ fighter.stance || 'Unknown stance' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="record-card">
+        <span>Professional record</span>
+        <strong>{{ getRecord() }}</strong>
+        <small>Wins · Losses · Draws</small>
+      </div>
+    </section>
+
+    <section class="quick-stats-grid">
+      <article class="quick-stat-card">
+        <span>Wins</span>
+        <strong>{{ fighter.wins }}</strong>
+        <small>Total victories</small>
+      </article>
+
+      <article class="quick-stat-card">
+        <span>KO wins</span>
+        <strong>{{ fighter.koWins }}</strong>
+        <small>By knockout</small>
+      </article>
+
+      <article class="quick-stat-card">
+        <span>Submission wins</span>
+        <strong>{{ fighter.submissionWins }}</strong>
+        <small>By submission</small>
+      </article>
+
+      <article class="quick-stat-card">
+        <span>Finish rate</span>
+        <strong>{{ getFinishRate() }}%</strong>
+        <small>KO and submission wins</small>
+      </article>
+
+      <article class="quick-stat-card">
+        <span>Win streak</span>
+        <strong>{{ fighter.currentWinStreak }}</strong>
+        <small>Current streak</small>
+      </article>
+    </section>
+
+    <div class="details-layout">
+      <div class="details-main-column">
+        <section class="content-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Overview</p>
+              <h2>Fighter biography</h2>
+            </div>
+          </div>
+
+          <p
+            *ngIf="fighter.bio"
+            class="biography"
+          >
+            {{ fighter.bio }}
+          </p>
+
+          <p
+            *ngIf="!fighter.bio"
+            class="empty-value"
+          >
+            Biography has not been added for this fighter.
+          </p>
+        </section>
+
+        <section class="content-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Fight record</p>
+              <h2>Career results</h2>
+            </div>
+          </div>
+
+          <div class="record-grid">
+            <div class="record-item wins">
+              <span>Wins</span>
+              <strong>{{ fighter.wins }}</strong>
+            </div>
+
+            <div class="record-item losses">
+              <span>Losses</span>
+              <strong>{{ fighter.losses }}</strong>
+            </div>
+
+            <div class="record-item draws">
+              <span>Draws</span>
+              <strong>{{ fighter.draws }}</strong>
+            </div>
+
+            <div class="record-item">
+              <span>KO wins</span>
+              <strong>{{ fighter.koWins }}</strong>
+            </div>
+
+            <div class="record-item">
+              <span>Submission wins</span>
+              <strong>{{ fighter.submissionWins }}</strong>
+            </div>
+
+            <div class="record-item">
+              <span>Decision wins</span>
+              <strong>{{ fighter.decisionWins }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="content-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Performance</p>
+              <h2>Striking statistics</h2>
+            </div>
+          </div>
+
+          <div class="statistics-grid">
+            <article class="statistic-item">
+              <div>
+                <span>Striking accuracy</span>
+                <strong>
+                  {{ fighter.strikingAccuracy }}%
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-value"
+                  [style.width.%]="fighter.strikingAccuracy"
+                ></div>
+              </div>
+            </article>
+
+            <article class="statistic-item">
+              <div>
+                <span>Striking defense</span>
+                <strong>
+                  {{ fighter.strikingDefense }}%
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-value"
+                  [style.width.%]="fighter.strikingDefense"
+                ></div>
+              </div>
+            </article>
+
+            <article class="statistic-number">
+              <span>Significant strikes per minute</span>
+              <strong>
+                {{ fighter.significantStrikesPerMinute }}
+              </strong>
+            </article>
+
+            <article class="statistic-number">
+              <span>Strikes absorbed per minute</span>
+              <strong>
+                {{
+                  fighter.significantStrikesAbsorbedPerMinute
+                }}
+              </strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Grappling</p>
+              <h2>Takedown statistics</h2>
+            </div>
+          </div>
+
+          <div class="statistics-grid">
+            <article class="statistic-item">
+              <div>
+                <span>Takedown accuracy</span>
+                <strong>
+                  {{ fighter.takedownAccuracy }}%
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-value"
+                  [style.width.%]="fighter.takedownAccuracy"
+                ></div>
+              </div>
+            </article>
+
+            <article class="statistic-item">
+              <div>
+                <span>Takedown defense</span>
+                <strong>
+                  {{ fighter.takedownDefense }}%
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-value"
+                  [style.width.%]="fighter.takedownDefense"
+                ></div>
+              </div>
+            </article>
+
+            <article class="statistic-number">
+              <span>Takedowns per 15 minutes</span>
+              <strong>
+                {{ fighter.takedownsPer15 }}
+              </strong>
+            </article>
+
+            <article class="statistic-number">
+              <span>Submission average</span>
+              <strong>
+                {{ fighter.submissionAverage }}
+              </strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-card fight-history-card">
+          <div class="section-heading fight-history-heading">
+            <div>
+              <p class="eyebrow">Fight record</p>
+              <h2>Fight history</h2>
+            </div>
+
+            <span
+              *ngIf="!fightsLoading"
+              class="fight-total"
+            >
+              {{ fights.length }}
+              {{ fights.length === 1 ? 'fight' : 'fights' }}
+            </span>
+          </div>
+
+          <div
+            *ngIf="fightsLoading"
+            class="fight-history-loading"
+          >
+            <div class="small-spinner"></div>
+            <span>Loading fight history...</span>
+          </div>
+
+          <div
+            *ngIf="
+              !fightsLoading &&
+              fightsErrorMessage
+            "
+            class="fight-history-message error"
+          >
+            {{ fightsErrorMessage }}
+          </div>
+
+          <div
+            *ngIf="
+              !fightsLoading &&
+              !fightsErrorMessage &&
+              fights.length === 0
+            "
+            class="fight-history-message"
+          >
+            This fighter does not have any recorded
+            fights yet.
+          </div>
+
+          <div
+            *ngIf="
+              !fightsLoading &&
+              !fightsErrorMessage &&
+              fights.length > 0
+            "
+            class="fight-history-list"
+          >
+            <button
+              *ngFor="
+                let fight of fights;
+                trackBy: trackFightById
+              "
+              type="button"
+              class="fight-history-item"
+              (click)="openFight(fight.id)"
+            >
+              <span
+                class="fight-result"
+                [ngClass]="getFightResultClass(fight)"
+              >
+                {{ getFightResult(fight) }}
+              </span>
+
+              <span class="opponent-avatar">
+                <img
+                  *ngIf="getOpponent(fight)?.image"
+                  [src]="getOpponent(fight)?.image"
+                  [alt]="getOpponent(fight)?.name"
+                />
+
+                <span
+                  *ngIf="!getOpponent(fight)?.image"
+                  class="opponent-initials"
+                >
+                  {{
+                    getInitials(
+                      getOpponent(fight)?.name || '?'
+                    )
+                  }}
+                </span>
+              </span>
+
+              <span class="fight-opponent">
+                <small>Opponent</small>
+
+                <strong>
+                  {{ getOpponent(fight)?.name }}
+                </strong>
+
+                <span>
+                  {{ fight.event.name }}
+                </span>
+              </span>
+
+              <span class="fight-method">
+                <strong>
+                  {{ formatFightMethod(fight.method) }}
+                </strong>
+
+                <small
+                  *ngIf="
+                    fight.finishedRound &&
+                    fight.finishedTime
+                  "
+                >
+                  Round {{ fight.finishedRound }}
+                  · {{ fight.finishedTime }}
+                </small>
+
+                <small
+                  *ngIf="fight.status === 'SCHEDULED'"
+                >
+                  Scheduled fight
+                </small>
+              </span>
+
+              <span class="fight-event-data">
+                <strong>
+                  {{ fight.weightClass }}
+                </strong>
+
+                <small>
+                  {{ formatEventDate(fight.event.date) }}
+                </small>
+
+                <span
+                  *ngIf="fight.titleFight"
+                  class="title-fight-label"
+                >
+                  Title fight
+                </span>
+              </span>
+
+              <span class="fight-open-arrow">
+                →
+              </span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="details-sidebar">
+        <section class="content-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Profile</p>
+              <h2>Personal data</h2>
+            </div>
+          </div>
+
+          <dl class="information-list">
+            <div>
+              <dt>Country</dt>
+              <dd>{{ fighter.country }}</dd>
+            </div>
+
+            <div>
+              <dt>Age</dt>
+              <dd>{{ fighter.age }} years</dd>
+            </div>
+
+            <div>
+              <dt>Height</dt>
+              <dd>{{ fighter.height }} cm</dd>
+            </div>
+
+            <div>
+              <dt>Weight</dt>
+              <dd>{{ fighter.weight }} kg</dd>
+            </div>
+
+            <div>
+              <dt>Reach</dt>
+              <dd>
+                {{
+                  fighter.reach
+                    ? fighter.reach + ' cm'
+                    : 'Not specified'
+                }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Stance</dt>
+              <dd>
+                {{ fighter.stance || 'Not specified' }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>Fighting style</dt>
+              <dd>
+                {{
+                  fighter.fightingStyle ||
+                  'Not specified'
+                }}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="content-card ranking-card">
+          <p class="eyebrow">
+            Current position
+          </p>
+
+          <span class="large-ranking">
+            {{ getRankingLabel() }}
+          </span>
+
+          <p>
+            Current ranking and championship status.
+          </p>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>

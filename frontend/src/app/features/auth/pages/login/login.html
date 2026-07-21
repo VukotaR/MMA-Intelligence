@@ -1,0 +1,152 @@
+<div class="login-page">
+  <div class="background-decoration decoration-one"></div>
+  <div class="background-decoration decoration-two"></div>
+
+  <main class="login-card">
+    <section class="branding-section">
+      <div class="logo-mark">MI</div>
+
+      <p class="eyebrow">Fight analysis platform</p>
+
+      <h1>MMA Intelligence</h1>
+
+      <p class="description">
+  Analyze fighters, compare statistics, generate AI-powered predictions and explore MMA events from one professional platform.
+</p>
+
+      <div class="feature-list">
+        <div class="feature">
+          <span class="feature-icon">01</span>
+
+          <div>
+            <strong>Fighter Analysis</strong>
+<p>Explore detailed fighter statistics and performance metrics.</p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">02</span>
+
+          <div>
+            <strong>Fight Comparison</strong>
+<p>Compare two fighters from the same weight division.</p>  
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">03</span>
+
+          <div>
+            <strong>AI Predictions</strong>
+<p>Predict fight outcomes using advanced analytics.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="form-heading">
+        <p class="eyebrow">Welcome Back</p>
+       <h2>Sign In</h2>
+        <p>Sign in to continue to your account.</p>
+      </div>
+
+      <form
+        class="login-form"
+        [formGroup]="loginForm"
+        (ngSubmit)="login()"
+      >
+        <div class="form-field">
+          <label for="email">Email Address</label>
+
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="coach@example.com"
+            autocomplete="email"
+          />
+
+          @if (email.touched && email.hasError('required')) {
+            <small class="field-error">
+             Email is required.
+            </small>
+          }
+
+          @if (email.touched && email.hasError('email')) {
+            <small class="field-error">
+              Please enter a valid email address.
+            </small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="password">Password</label>
+
+          <div class="password-wrapper">
+            <input
+              id="password"
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+
+            <button
+              class="password-toggle"
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="
+                hidePassword ? 'Show' : 'Hide'
+              "
+            >
+              {{ hidePassword ? 'Show' : 'Hide' }}
+            </button>
+          </div>
+
+          @if (password.touched && password.hasError('required')) {
+            <small class="field-error">
+              Password is required.
+            </small>
+          }
+
+          @if (password.touched && password.hasError('minlength')) {
+            <small class="field-error">
+              Password must contain at least 6 characters.
+            </small>
+          }
+        </div>
+
+        @if (errorMessage) {
+          <div class="login-error" role="alert">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button
+          class="login-button"
+          type="submit"
+          [disabled]="loading"
+        >
+          @if (loading) {
+            <span class="spinner"></span>
+            Signing In...
+          } @else {
+            Sign In
+          }
+        </button>
+        
+      </form>
+      <div class="register-section">
+  <p>
+    Don't have an account?
+    <a routerLink="/register">Create one</a>
+  </p>
+</div>
+
+      <p class="footer-text">
+        MMA Intelligence · Faculty Project
+      </p>
+    </section>
+  </main>
+</div>

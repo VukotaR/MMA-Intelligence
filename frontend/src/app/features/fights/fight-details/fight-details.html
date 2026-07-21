@@ -1,0 +1,1349 @@
+<section class="fight-details-page">
+
+  <!-- LOADING -->
+  <div
+    class="state-container"
+    *ngIf="loading"
+  >
+    <div class="loader"></div>
+
+    <p>
+      Loading fight details...
+    </p>
+  </div>
+
+  <!-- ERROR -->
+  <div
+    class="state-container error-state"
+    *ngIf="!loading && errorMessage"
+  >
+    <h2>
+      Fight unavailable
+    </h2>
+
+    <p>
+      {{ errorMessage }}
+    </p>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="goBack()"
+    >
+      Back to event
+    </button>
+  </div>
+
+  <!-- CONTENT -->
+  <ng-container
+    *ngIf="!loading && fight && !errorMessage"
+  >
+
+    <!-- HERO -->
+    <section class="fight-hero">
+
+      <div class="hero-overlay"></div>
+
+      <div class="hero-content">
+
+        <button
+          type="button"
+          class="back-button"
+          (click)="goBack()"
+        >
+          <span aria-hidden="true">
+            ←
+          </span>
+
+          Back to event
+        </button>
+
+        <div class="event-information">
+
+          <span class="event-eyebrow">
+            {{ getCardPositionLabel() }}
+          </span>
+
+          <h1 class="event-name">
+            {{ getEventName() }}
+          </h1>
+
+          <div class="event-meta">
+
+            <span>
+              {{ getEventDate() }}
+            </span>
+
+            <span class="meta-separator">
+              •
+            </span>
+
+            <span>
+              {{ getEventLocation() }}
+            </span>
+
+          </div>
+
+          <div class="fight-tags">
+
+            <span class="fight-tag">
+              {{ getWeightClassLabel() }}
+            </span>
+
+            <span
+              class="fight-tag title-tag"
+              *ngIf="fight.titleFight"
+            >
+              Title Fight
+            </span>
+
+            <span class="fight-tag">
+              {{ getScheduledRoundsLabel() }}
+            </span>
+
+            <span
+              class="fight-tag status-tag"
+              [class.completed]="isCompleted()"
+            >
+              {{ getFightStatusLabel() }}
+            </span>
+
+          </div>
+
+        </div>
+
+        <!-- MATCHUP -->
+        <div class="matchup-container">
+
+          <!-- RED FIGHTER -->
+          <article
+            class="fighter-card red-corner"
+            [class.winner-card]="isWinner(fight.redCorner)"
+            (click)="openFighter(fight.redCorner)"
+          >
+
+            <div
+              class="corner-label red-label"
+            >
+              Red Corner
+            </div>
+
+            <div
+              class="winner-ribbon"
+              *ngIf="isWinner(fight.redCorner)"
+            >
+              Winner
+            </div>
+
+            <div class="fighter-image-wrapper">
+
+              <img
+                *ngIf="hasFighterImage(fight.redCorner)"
+                class="fighter-image"
+                [src]="getFighterImage(fight.redCorner)"
+                [alt]="getFighterName(fight.redCorner)"
+              />
+
+              <div
+                class="fighter-image-placeholder"
+                *ngIf="!hasFighterImage(fight.redCorner)"
+              >
+                {{ getFighterInitials(fight.redCorner) }}
+              </div>
+
+            </div>
+
+            <div class="fighter-card-content">
+
+              <span
+                class="fighter-ranking"
+                *ngIf="getChampionLabel(fight.redCorner)"
+              >
+                {{ getChampionLabel(fight.redCorner) }}
+              </span>
+
+              <h2 class="fighter-name">
+                {{ getFighterName(fight.redCorner) }}
+              </h2>
+
+              <p
+                class="fighter-nickname"
+                *ngIf="fight.redCorner.nickname"
+              >
+                “{{ fight.redCorner.nickname }}”
+              </p>
+
+              <p class="fighter-country">
+                {{ fight.redCorner.country }}
+              </p>
+
+              <div class="fighter-record">
+                {{ getFighterRecord(fight.redCorner) }}
+              </div>
+
+              <p
+                class="fighter-style"
+                *ngIf="fight.redCorner.fightingStyle"
+              >
+                {{ fight.redCorner.fightingStyle }}
+              </p>
+
+            </div>
+
+          </article>
+
+          <!-- CENTER VS -->
+          <div class="versus-section">
+
+            <span class="versus-label">
+              VS
+            </span>
+
+            <div
+              class="result-mini-card"
+              *ngIf="hasResult()"
+            >
+
+              <span class="result-mini-title">
+                Result
+              </span>
+
+              <strong>
+                {{ getMethodLabel() }}
+              </strong>
+
+              <span>
+                {{ getFinishLabel() }}
+              </span>
+
+            </div>
+
+            <div
+              class="result-mini-card pending-card"
+              *ngIf="!hasResult()"
+            >
+              <span class="result-mini-title">
+                Fight status
+              </span>
+
+              <strong>
+                {{ getFightStatusLabel() }}
+              </strong>
+
+              <span>
+                {{ getScheduledRoundsLabel() }}
+              </span>
+            </div>
+
+          </div>
+
+          <!-- BLUE FIGHTER -->
+          <article
+            class="fighter-card blue-corner"
+            [class.winner-card]="isWinner(fight.blueCorner)"
+            (click)="openFighter(fight.blueCorner)"
+          >
+
+            <div
+              class="corner-label blue-label"
+            >
+              Blue Corner
+            </div>
+
+            <div
+              class="winner-ribbon"
+              *ngIf="isWinner(fight.blueCorner)"
+            >
+              Winner
+            </div>
+
+            <div class="fighter-image-wrapper">
+
+              <img
+                *ngIf="hasFighterImage(fight.blueCorner)"
+                class="fighter-image"
+                [src]="getFighterImage(fight.blueCorner)"
+                [alt]="getFighterName(fight.blueCorner)"
+              />
+
+              <div
+                class="fighter-image-placeholder"
+                *ngIf="!hasFighterImage(fight.blueCorner)"
+              >
+                {{ getFighterInitials(fight.blueCorner) }}
+              </div>
+
+            </div>
+
+            <div class="fighter-card-content">
+
+              <span
+                class="fighter-ranking"
+                *ngIf="getChampionLabel(fight.blueCorner)"
+              >
+                {{ getChampionLabel(fight.blueCorner) }}
+              </span>
+
+              <h2 class="fighter-name">
+                {{ getFighterName(fight.blueCorner) }}
+              </h2>
+
+              <p
+                class="fighter-nickname"
+                *ngIf="fight.blueCorner.nickname"
+              >
+                “{{ fight.blueCorner.nickname }}”
+              </p>
+
+              <p class="fighter-country">
+                {{ fight.blueCorner.country }}
+              </p>
+
+              <div class="fighter-record">
+                {{ getFighterRecord(fight.blueCorner) }}
+              </div>
+
+              <p
+                class="fighter-style"
+                *ngIf="fight.blueCorner.fightingStyle"
+              >
+                {{ fight.blueCorner.fightingStyle }}
+              </p>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <main class="fight-content">
+
+      <!-- RESULT -->
+      <section
+        class="content-card result-card"
+        *ngIf="hasResult()"
+      >
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              Official result
+            </span>
+
+            <h2>
+              Fight Result
+            </h2>
+          </div>
+
+          <span class="result-status">
+            Completed
+          </span>
+
+        </div>
+
+        <div class="winner-highlight">
+
+          <div class="winner-icon">
+            🏆
+          </div>
+
+          <div class="winner-information">
+
+            <span>
+              Winner
+            </span>
+
+            <strong>
+              {{ getFighterName(fight.winner) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="result-grid">
+
+          <div class="result-item">
+
+            <span>
+              Method
+            </span>
+
+            <strong>
+              {{ getMethodLabel() }}
+            </strong>
+
+          </div>
+
+          <div class="result-item">
+
+            <span>
+              Round
+            </span>
+
+            <strong>
+              {{ fight.finishedRound || '—' }}
+            </strong>
+
+          </div>
+
+          <div class="result-item">
+
+            <span>
+              Time
+            </span>
+
+            <strong>
+              {{ fight.finishedTime || '—' }}
+            </strong>
+
+          </div>
+
+          <div class="result-item">
+
+            <span>
+              Scheduled
+            </span>
+
+            <strong>
+              {{ getScheduledRoundsLabel() }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div
+          class="method-details"
+          *ngIf="fight.methodDetails"
+        >
+          <span>
+            Finish details
+          </span>
+
+          <p>
+            {{ fight.methodDetails }}
+          </p>
+        </div>
+
+      </section>
+
+      <!-- PENDING -->
+      <section
+        class="content-card pending-result-card"
+        *ngIf="!hasResult()"
+      >
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              Fight information
+            </span>
+
+            <h2>
+              Result Pending
+            </h2>
+          </div>
+
+          <span class="pending-status">
+            {{ getFightStatusLabel() }}
+          </span>
+
+        </div>
+
+        <p>
+          This fight does not have an official result yet.
+        </p>
+
+      </section>
+
+      <!-- TALE OF THE TAPE -->
+      <section class="content-card tale-card">
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              Fighter comparison
+            </span>
+
+            <h2>
+              Tale of the Tape
+            </h2>
+          </div>
+
+        </div>
+
+        <div class="tale-fighter-names">
+
+          <div>
+            <strong>
+              {{ getFighterName(fight.redCorner) }}
+            </strong>
+
+            <span>
+              Red Corner
+            </span>
+          </div>
+
+          <div class="tale-versus">
+            VS
+          </div>
+
+          <div>
+            <strong>
+              {{ getFighterName(fight.blueCorner) }}
+            </strong>
+
+            <span>
+              Blue Corner
+            </span>
+          </div>
+
+        </div>
+
+        <div class="tale-table">
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'age') }}
+            </span>
+
+            <span class="tale-label">
+              Age
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'age') }}
+            </span>
+
+          </div>
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'height') }}
+            </span>
+
+            <span class="tale-label">
+              Height
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'height') }}
+            </span>
+
+          </div>
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'reach') }}
+            </span>
+
+            <span class="tale-label">
+              Reach
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'reach') }}
+            </span>
+
+          </div>
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'weight') }}
+            </span>
+
+            <span class="tale-label">
+              Weight
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'weight') }}
+            </span>
+
+          </div>
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'stance') }}
+            </span>
+
+            <span class="tale-label">
+              Stance
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'stance') }}
+            </span>
+
+          </div>
+
+          <div class="tale-row">
+
+            <span class="tale-value red-value">
+              {{ getTaleValue(fight.redCorner, 'fightingStyle') }}
+            </span>
+
+            <span class="tale-label">
+              Style
+            </span>
+
+            <span class="tale-value blue-value">
+              {{ getTaleValue(fight.blueCorner, 'fightingStyle') }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- PERFORMANCE STATS -->
+      <section class="content-card statistics-card">
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              Career performance
+            </span>
+
+            <h2>
+              Fighter Statistics
+            </h2>
+          </div>
+
+        </div>
+
+        <div class="statistics-grid">
+
+          <!-- RED STATS -->
+          <article class="fighter-statistics red-statistics">
+
+            <div class="statistics-header">
+
+              <span>
+                Red Corner
+              </span>
+
+              <strong>
+                {{ getFighterName(fight.redCorner) }}
+              </strong>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Striking Accuracy
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.strikingAccuracy,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.redCorner.strikingAccuracy
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Striking Defense
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.strikingDefense,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.redCorner.strikingDefense
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Takedown Accuracy
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.takedownAccuracy,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.redCorner.takedownAccuracy
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Takedown Defense
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.takedownDefense,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.redCorner.takedownDefense
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="metric-grid">
+
+              <div class="metric-item">
+                <span>
+                  Sig. Strikes / Min
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner
+                        .significantStrikesPerMinute,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Absorbed / Min
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner
+                        .significantStrikesAbsorbedPerMinute,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Takedowns / 15
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.takedownsPer15,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Submission Avg.
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.redCorner.submissionAverage,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+            </div>
+
+          </article>
+
+          <!-- BLUE STATS -->
+          <article class="fighter-statistics blue-statistics">
+
+            <div class="statistics-header">
+
+              <span>
+                Blue Corner
+              </span>
+
+              <strong>
+                {{ getFighterName(fight.blueCorner) }}
+              </strong>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Striking Accuracy
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.strikingAccuracy,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.blueCorner.strikingAccuracy
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Striking Defense
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.strikingDefense,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.blueCorner.strikingDefense
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Takedown Accuracy
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.takedownAccuracy,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.blueCorner.takedownAccuracy
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="stat-block">
+
+              <div class="stat-title-row">
+                <span>
+                  Takedown Defense
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.takedownDefense,
+                      '%'
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="
+                    getPercentage(
+                      fight.blueCorner.takedownDefense
+                    )
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+            <div class="metric-grid">
+
+              <div class="metric-item">
+                <span>
+                  Sig. Strikes / Min
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner
+                        .significantStrikesPerMinute,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Absorbed / Min
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner
+                        .significantStrikesAbsorbedPerMinute,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Takedowns / 15
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.takedownsPer15,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="metric-item">
+                <span>
+                  Submission Avg.
+                </span>
+
+                <strong>
+                  {{
+                    getStatValue(
+                      fight.blueCorner.submissionAverage,
+                      '',
+                      2
+                    )
+                  }}
+                </strong>
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+      <!-- WIN METHODS -->
+      <section class="content-card win-method-card">
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              Career victories
+            </span>
+
+            <h2>
+              Win Method Breakdown
+            </h2>
+          </div>
+
+        </div>
+
+        <div class="win-method-grid">
+
+          <article class="win-method-fighter">
+
+            <h3>
+              {{ getFighterName(fight.redCorner) }}
+            </h3>
+
+            <div class="method-stat">
+              <span>
+                KO / TKO
+              </span>
+
+              <strong>
+                {{ fight.redCorner.koWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Submission
+              </span>
+
+              <strong>
+                {{ fight.redCorner.submissionWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Decision
+              </span>
+
+              <strong>
+                {{ fight.redCorner.decisionWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Win Streak
+              </span>
+
+              <strong>
+                {{ fight.redCorner.currentWinStreak }}
+              </strong>
+            </div>
+
+          </article>
+
+          <article class="win-method-fighter">
+
+            <h3>
+              {{ getFighterName(fight.blueCorner) }}
+            </h3>
+
+            <div class="method-stat">
+              <span>
+                KO / TKO
+              </span>
+
+              <strong>
+                {{ fight.blueCorner.koWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Submission
+              </span>
+
+              <strong>
+                {{ fight.blueCorner.submissionWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Decision
+              </span>
+
+              <strong>
+                {{ fight.blueCorner.decisionWins }}
+              </strong>
+            </div>
+
+            <div class="method-stat">
+              <span>
+                Win Streak
+              </span>
+
+              <strong>
+                {{ fight.blueCorner.currentWinStreak }}
+              </strong>
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+      <!-- AI ANALYSIS -->
+      <section
+        class="content-card analysis-card"
+        *ngIf="hasAnalysis()"
+      >
+
+        <div class="analysis-glow"></div>
+
+        <div class="section-heading analysis-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              MMA Intelligence
+            </span>
+
+            <h2>
+              AI Fight Analysis
+            </h2>
+          </div>
+
+          <span class="analysis-status">
+            {{ getAnalysisStatusLabel() }}
+          </span>
+
+        </div>
+
+        <div class="analysis-content">
+
+          <div class="analysis-icon">
+            AI
+          </div>
+
+          <p>
+            {{ fight.analysisSummary }}
+          </p>
+
+        </div>
+
+      </section>
+
+      <!-- NO ANALYSIS -->
+      <section
+        class="content-card no-analysis-card"
+        *ngIf="!hasAnalysis()"
+      >
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              MMA Intelligence
+            </span>
+
+            <h2>
+              AI Fight Analysis
+            </h2>
+          </div>
+
+          <span class="analysis-status">
+            {{ getAnalysisStatusLabel() }}
+          </span>
+
+        </div>
+
+        <p>
+          AI analysis is not available for this fight yet.
+        </p>
+
+      </section>
+
+      <!-- VIDEO -->
+<section
+  class="content-card video-card"
+  *ngIf="hasYoutubeVideo()"
+>
+  <div class="section-heading video-heading">
+    <div>
+      <span class="section-eyebrow">
+        Fight media
+      </span>
+
+      <h2>
+        Watch Fight Video
+      </h2>
+    </div>
+
+    <button
+      type="button"
+      class="youtube-external-button"
+      (click)="openYoutubeVideo()"
+    >
+      Open on YouTube
+      <span aria-hidden="true">↗</span>
+    </button>
+  </div>
+
+  <div
+    class="youtube-player-wrapper"
+    *ngIf="youtubeEmbedUrl"
+  >
+    <iframe
+      class="youtube-player"
+      [src]="youtubeEmbedUrl"
+      [title]="
+        getFighterName(fight.redCorner) +
+        ' vs ' +
+        getFighterName(fight.blueCorner)
+      "
+      allow="
+        accelerometer;
+        autoplay;
+        clipboard-write;
+        encrypted-media;
+        gyroscope;
+        picture-in-picture;
+        web-share
+      "
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <div
+    class="invalid-video-message"
+    *ngIf="!youtubeEmbedUrl"
+  >
+    <strong>
+      Video cannot be embedded.
+    </strong>
+
+    <p>
+      The saved link is not a supported YouTube video URL.
+    </p>
+
+    <button
+      type="button"
+      class="youtube-button"
+      (click)="openYoutubeVideo()"
+    >
+      Open original link
+    </button>
+  </div>
+</section>
+
+      <!-- ACTIONS -->
+      <section class="bottom-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="goBack()"
+        >
+          Back to event
+        </button>
+
+        <button
+          type="button"
+          class="primary-button"
+          (click)="openFighter(fight.redCorner)"
+        >
+          View
+          {{ getFighterName(fight.redCorner) }}
+        </button>
+
+        <button
+          type="button"
+          class="primary-button blue-button"
+          (click)="openFighter(fight.blueCorner)"
+        >
+          View
+          {{ getFighterName(fight.blueCorner) }}
+        </button>
+
+      </section>
+
+    </main>
+
+  </ng-container>
+
+</section>

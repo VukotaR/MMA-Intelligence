@@ -1,0 +1,1148 @@
+<div class="compare-page">
+    <header class="page-header">
+        <div class="header-left">
+            <button class="back-button" type="button" aria-label="Back to dashboard" (click)="goBack()">
+                ←
+            </button>
+
+            <div>
+                <p class="eyebrow">MMA Intelligence</p>
+                <h1>Compare Fighters</h1>
+
+                <p class="page-description">
+                    Compare athlete statistics and generate a data-driven
+                    fight prediction.
+                </p>
+            </div>
+        </div>
+
+        <button *ngIf="redFighter || blueFighter" class="reset-button" type="button" (click)="resetComparison()">
+            Reset comparison
+        </button>
+    </header>
+
+    <div *ngIf="errorMessage" class="error-message">
+        <span>{{ errorMessage }}</span>
+
+        <button *ngIf="fighters.length === 0" type="button" (click)="loadFighters()">
+            Try again
+        </button>
+    </div>
+
+    <section *ngIf="loading" class="loading-card">
+        <div class="spinner"></div>
+        <p>Loading fighters...</p>
+    </section>
+
+    <section *ngIf="!loading" class="selection-card">
+        <div class="selection-heading">
+            <p class="eyebrow">Matchup builder</p>
+            <h2>Select two fighters</h2>
+
+            <p>
+                The second fighter may compete in the same weight class,
+                one class above or two classes above the first fighter.
+            </p>
+        </div>
+
+        <div class="fighter-selectors">
+            <!-- RED CORNER -->
+
+            <article class="selector-side red-side">
+                <div class="corner-heading">
+                    <span class="corner-dot"></span>
+
+                    <div>
+                        <p>Red corner</p>
+                        <h3>Fighter A</h3>
+                    </div>
+                </div>
+
+                <label class="select-field">
+                    <span>Select fighter</span>
+
+                    <select [(ngModel)]="redFighterId" (ngModelChange)="onRedFighterChange()">
+                        <option [ngValue]="null">
+                            Choose red corner
+                        </option>
+
+                        <option *ngFor="let fighter of availableRedFighters" [ngValue]="fighter.id">
+                            {{ fighter.name }} ·
+                            {{ fighter.weightClass }} ·
+                            {{ getRecord(fighter) }}
+                        </option>
+                    </select>
+                </label>
+
+                <div *ngIf="redFighter" class="selected-fighter-card">
+                    <div class="fighter-avatar">
+                        <img *ngIf="redFighter.image" [src]="redFighter.image" [alt]="redFighter.name" />
+
+                        <span *ngIf="!redFighter.image">
+                            {{ getInitials(redFighter.name) }}
+                        </span>
+                    </div>
+
+                    <div class="selected-fighter-info">
+                        <span class="ranking-label">
+                            {{ getRankingLabel(redFighter) }}
+                        </span>
+
+                        <h3>{{ redFighter.name }}</h3>
+
+                        <p *ngIf="redFighter.nickname">
+                            “{{ redFighter.nickname }}”
+                        </p>
+
+                        <div class="fighter-summary">
+                            <span>{{ getRecord(redFighter) }}</span>
+                            <span>{{ redFighter.weightClass }}</span>
+                            <span>{{ redFighter.country }}</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <div class="versus-column">
+                <span>VS</span>
+            </div>
+
+            <!-- BLUE CORNER -->
+
+            <article class="selector-side blue-side">
+                <div class="corner-heading">
+                    <span class="corner-dot"></span>
+
+                    <div>
+                        <p>Blue corner</p>
+                        <h3>Fighter B</h3>
+                    </div>
+                </div>
+
+                <label class="select-field">
+                    <span>Select opponent</span>
+
+                    <select [(ngModel)]="blueFighterId" [disabled]="!redFighter"
+                        (ngModelChange)="onBlueFighterChange()">
+                        <option [ngValue]="null">
+                            {{
+                            redFighter
+                            ? 'Choose blue corner'
+                            : 'Select red corner first'
+                            }}
+                        </option>
+
+                        <option *ngFor="let fighter of availableBlueFighters" [ngValue]="fighter.id">
+                            {{ fighter.name }} ·
+                            {{ fighter.weightClass }} ·
+                            {{ getRecord(fighter) }}
+                        </option>
+                    </select>
+                </label>
+
+                <div *ngIf="redFighter" class="allowed-classes">
+                    <strong>Allowed divisions:</strong>
+                    <span>{{ allowedWeightClassesLabel }}</span>
+                </div>
+
+                <div *ngIf="blueFighter" class="selected-fighter-card">
+                    <div class="fighter-avatar">
+                        <img *ngIf="blueFighter.image" [src]="blueFighter.image" [alt]="blueFighter.name" />
+
+                        <span *ngIf="!blueFighter.image">
+                            {{ getInitials(blueFighter.name) }}
+                        </span>
+                    </div>
+
+                    <div class="selected-fighter-info">
+                        <span class="ranking-label">
+                            {{ getRankingLabel(blueFighter) }}
+                        </span>
+
+                        <h3>{{ blueFighter.name }}</h3>
+
+                        <p *ngIf="blueFighter.nickname">
+                            “{{ blueFighter.nickname }}”
+                        </p>
+
+                        <div class="fighter-summary">
+                            <span>{{ getRecord(blueFighter) }}</span>
+                            <span>{{ blueFighter.weightClass }}</span>
+                            <span>{{ blueFighter.country }}</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="compare-action">
+            <button class="compare-button" type="button" [disabled]="!redFighter || !blueFighter"
+                (click)="compareFighters()">
+                Generate prediction
+            </button>
+        </div>
+    </section>
+
+    <!-- RESULTS -->
+
+    <ng-container *ngIf="
+      comparisonResult &&
+      redFighter &&
+      blueFighter
+    ">
+        <section id="comparison-result" class="prediction-card">
+            <div class="prediction-heading">
+                <p class="eyebrow">MMA Intelligence prediction</p>
+                <h2>{{ comparisonResult.verdict }}</h2>
+
+                <p>
+                    This prediction is calculated from the fighter data
+                    currently stored in the application.
+                </p>
+            </div>
+
+            <div class="prediction-main">
+                <div class="prediction-fighter red-prediction" [class.predicted-winner]="
+            getWinnerSide() === 'red'
+          ">
+                    <div class="prediction-avatar">
+                        <img *ngIf="redFighter.image" [src]="redFighter.image" [alt]="redFighter.name" />
+
+                        <span *ngIf="!redFighter.image">
+                            {{ getInitials(redFighter.name) }}
+                        </span>
+                    </div>
+
+                    <h3>{{ redFighter.name }}</h3>
+
+                    <strong>
+                        {{ comparisonResult.redProbability }}%
+                    </strong>
+
+                    <span>winning probability</span>
+                </div>
+
+                <div class="prediction-center">
+                    <span class="prediction-label">
+                        Predicted winner
+                    </span>
+
+                    <div class="winner-name">
+                        {{
+                        comparisonResult.winner
+                        ? comparisonResult.winner.name
+                        : 'Too close to call'
+                        }}
+                    </div>
+
+                    <div class="confidence-value">
+                        {{ comparisonResult.confidence }}%
+                    </div>
+
+                    <span class="confidence-label">
+                        confidence
+                    </span>
+
+                    <div class="predicted-method">
+                        {{ comparisonResult.predictedMethod }}
+                    </div>
+                </div>
+
+                <div class="prediction-fighter blue-prediction" [class.predicted-winner]="
+            getWinnerSide() === 'blue'
+          ">
+                    <div class="prediction-avatar">
+                        <img *ngIf="blueFighter.image" [src]="blueFighter.image" [alt]="blueFighter.name" />
+
+                        <span *ngIf="!blueFighter.image">
+                            {{ getInitials(blueFighter.name) }}
+                        </span>
+                    </div>
+
+                    <h3>{{ blueFighter.name }}</h3>
+
+                    <strong>
+                        {{ comparisonResult.blueProbability }}%
+                    </strong>
+
+                    <span>winning probability</span>
+                </div>
+            </div>
+
+            <div class="probability-bar">
+                <div class="red-probability" [style.width.%]="
+            comparisonResult.redProbability
+          "></div>
+
+                <div class="blue-probability" [style.width.%]="
+            comparisonResult.blueProbability
+          "></div>
+            </div>
+        </section>
+
+        <!-- REASONS -->
+
+        <section class="reasons-card">
+            <div class="section-title">
+                <p class="eyebrow">Explainable prediction</p>
+                <h2>Why this result?</h2>
+            </div>
+
+            <div class="reason-list">
+                <div *ngFor="
+            let reason of comparisonResult.reasons;
+            let index = index
+          " class="reason-item">
+                    <span>{{ index + 1 }}</span>
+                    <p>{{ reason }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TALE OF THE TAPE -->
+
+        <section class="comparison-card">
+            <div class="section-title centered-title">
+                <p class="eyebrow">Head-to-head statistics</p>
+                <h2>Tale of the Tape</h2>
+            </div>
+
+            <div class="comparison-header">
+                <button type="button" (click)="viewFighter(redFighter)">
+                    {{ redFighter.name }}
+                </button>
+
+                <span>Statistic</span>
+
+                <button type="button" (click)="viewFighter(blueFighter)">
+                    {{ blueFighter.name }}
+                </button>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.age,
+              blueFighter.age,
+              'red',
+              true
+            )
+          ">
+                    {{ redFighter.age }}
+                </strong>
+
+                <span>Age</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.age,
+              blueFighter.age,
+              'blue',
+              true
+            )
+          ">
+                    {{ blueFighter.age }}
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.height,
+              blueFighter.height,
+              'red'
+            )
+          ">
+                    {{ redFighter.height }} cm
+                </strong>
+
+                <span>Height</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.height,
+              blueFighter.height,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.height }} cm
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.reach,
+              blueFighter.reach,
+              'red'
+            )
+          ">
+                    {{ redFighter.reach }} cm
+                </strong>
+
+                <span>Reach</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.reach,
+              blueFighter.reach,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.reach }} cm
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong>{{ redFighter.weight }} kg</strong>
+                <span>Weight</span>
+                <strong>{{ blueFighter.weight }} kg</strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong>{{ redFighter.weightClass }}</strong>
+                <span>Division</span>
+                <strong>{{ blueFighter.weightClass }}</strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.wins,
+              blueFighter.wins,
+              'red'
+            )
+          ">
+                    {{ getRecord(redFighter) }}
+                </strong>
+
+                <span>Record</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.wins,
+              blueFighter.wins,
+              'blue'
+            )
+          ">
+                    {{ getRecord(blueFighter) }}
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.strikingAccuracy,
+              blueFighter.strikingAccuracy,
+              'red'
+            )
+          ">
+                    {{ redFighter.strikingAccuracy }}%
+                </strong>
+
+                <span>Striking accuracy</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.strikingAccuracy,
+              blueFighter.strikingAccuracy,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.strikingAccuracy }}%
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.strikingDefense,
+              blueFighter.strikingDefense,
+              'red'
+            )
+          ">
+                    {{ redFighter.strikingDefense }}%
+                </strong>
+
+                <span>Striking defense</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.strikingDefense,
+              blueFighter.strikingDefense,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.strikingDefense }}%
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.takedownAccuracy,
+              blueFighter.takedownAccuracy,
+              'red'
+            )
+          ">
+                    {{ redFighter.takedownAccuracy }}%
+                </strong>
+
+                <span>Takedown accuracy</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.takedownAccuracy,
+              blueFighter.takedownAccuracy,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.takedownAccuracy }}%
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.takedownDefense,
+              blueFighter.takedownDefense,
+              'red'
+            )
+          ">
+                    {{ redFighter.takedownDefense }}%
+                </strong>
+
+                <span>Takedown defense</span>
+
+                <strong [ngClass]="
+            getComparisonClass(
+              redFighter.takedownDefense,
+              blueFighter.takedownDefense,
+              'blue'
+            )
+          ">
+                    {{ blueFighter.takedownDefense }}%
+                </strong>
+            </div>
+
+            <div class="comparison-row">
+                <strong>{{ redFighter.fightingStyle || 'Unknown' }}</strong>
+                <span>Fighting style</span>
+                <strong>{{ blueFighter.fightingStyle || 'Unknown' }}</strong>
+            </div>
+        </section>
+
+        <!-- SCORE BREAKDOWN -->
+
+        <section class="score-card">
+            <div class="section-title">
+                <p class="eyebrow">Prediction model</p>
+                <h2>MMA Intelligence Score</h2>
+            </div>
+
+            <div class="total-scores">
+                <div>
+                    <span>{{ redFighter.name }}</span>
+                    <strong>{{ comparisonResult.redScore }}</strong>
+                </div>
+
+                <span class="score-divider">VS</span>
+
+                <div>
+                    <span>{{ blueFighter.name }}</span>
+                    <strong>{{ comparisonResult.blueScore }}</strong>
+                </div>
+            </div>
+
+            <div class="score-breakdown">
+                <article *ngFor="
+            let category of comparisonResult.scoreBreakdown
+          " class="score-category">
+                    <div class="score-category-heading">
+                        <div>
+                            <h3>{{ category.label }}</h3>
+                            <p>{{ category.description }}</p>
+                        </div>
+
+                        <div class="category-points">
+                            <strong>{{ category.redPoints }}</strong>
+                            <span>:</span>
+                            <strong>{{ category.bluePoints }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="dual-score-bar">
+                        <div class="red-score-track">
+                            <span [style.width.%]="
+                  category.redPoints /
+                  (category.redPoints + category.bluePoints || 1) *
+                  100
+                "></span>
+                        </div>
+
+                        <div class="blue-score-track">
+                            <span [style.width.%]="
+                  category.bluePoints /
+                  (category.redPoints + category.bluePoints || 1) *
+                  100
+                "></span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <!-- COACH GAME PLAN -->
+
+        <section *ngIf="canManageAnalysis" class="game-plan-card">
+            <div class="game-plan-header">
+                <div>
+                    <p class="eyebrow">
+                        Professional fight preparation
+                    </p>
+
+                    <h2>Coach Tactical Game Plan</h2>
+
+                    <p class="game-plan-description">
+                        Build a complete matchup strategy using the statistical
+                        prediction, fighter strengths and round-by-round planning.
+                    </p>
+                </div>
+
+                <button *ngIf="canManageAnalysis && !analysisFormVisible" type="button" class="new-plan-button"
+                    (click)="openAnalysisForm()">
+                    <span>+</span>
+                    Create game plan
+                </button>
+            </div>
+
+            <div *ngIf="analysisSuccessMessage" class="analysis-message success">
+                {{ analysisSuccessMessage }}
+            </div>
+
+            <div *ngIf="analysisErrorMessage && !analysisFormVisible" class="analysis-message error">
+                {{ analysisErrorMessage }}
+            </div>
+
+            <div *ngIf="analysisLoading" class="analysis-loading">
+                <div class="small-spinner"></div>
+                <span>Loading tactical plans...</span>
+            </div>
+
+            <!-- SAVED PLANS -->
+
+            <div *ngIf="
+      !analysisLoading &&
+      savedAnalyses.length > 0
+    " class="saved-plans">
+                <article *ngFor="let analysis of savedAnalyses" class="saved-plan">
+                    <header class="saved-plan-header">
+                        <div>
+                            <div class="plan-meta">
+                                <span class="plan-status" [class.published]="
+                analysis.status === 'PUBLISHED'
+              ">
+                                    {{
+                                    getAnalysisStatusLabel(
+                                    analysis.status
+                                    )
+                                    }}
+                                </span>
+
+                                <span>
+                                    {{ getCoachName(analysis) }}
+                                </span>
+
+                                <span>
+                                    {{
+                                    analysis.updatedAt
+                                    | date:'mediumDate'
+                                    }}
+                                </span>
+                            </div>
+
+                            <h3>{{ analysis.title }}</h3>
+                        </div>
+
+                        <div *ngIf="canManageAnalysis" class="saved-plan-actions">
+                            <button type="button" class="edit-plan-button" (click)="editAnalysis(analysis)">
+                                Edit
+                            </button>
+
+                            <button type="button" class="delete-plan-button" (click)="deleteAnalysis(analysis)">
+                                Delete
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="plan-summary">
+                        <span>Matchup assessment</span>
+                        <p>{{ analysis.summary }}</p>
+                    </div>
+
+                    <div class="plan-fighter-grid">
+                        <div class="plan-corner red-corner-plan">
+                            <div class="plan-corner-heading">
+                                <span class="corner-indicator"></span>
+
+                                <div>
+                                    <small>Red corner</small>
+                                    <strong>
+                                        {{ analysis.redFighter.name }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div *ngIf="analysis.redFighterStrengths" class="plan-detail">
+                                <span>Strengths to exploit</span>
+                                <p>
+                                    {{ analysis.redFighterStrengths }}
+                                </p>
+                            </div>
+
+                            <div *ngIf="analysis.redFighterWeaknesses" class="plan-detail">
+                                <span>Weaknesses to protect</span>
+                                <p>
+                                    {{ analysis.redFighterWeaknesses }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="plan-corner blue-corner-plan">
+                            <div class="plan-corner-heading">
+                                <span class="corner-indicator"></span>
+
+                                <div>
+                                    <small>Blue corner</small>
+                                    <strong>
+                                        {{ analysis.blueFighter.name }}
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div *ngIf="analysis.blueFighterStrengths" class="plan-detail">
+                                <span>Opponent strengths</span>
+                                <p>
+                                    {{ analysis.blueFighterStrengths }}
+                                </p>
+                            </div>
+
+                            <div *ngIf="analysis.blueFighterWeaknesses" class="plan-detail">
+                                <span>Opponent weaknesses</span>
+                                <p>
+                                    {{ analysis.blueFighterWeaknesses }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="primary-strategy">
+                        <span>Primary strategy</span>
+                        <p>{{ analysis.overallStrategy }}</p>
+                    </div>
+
+                    <div class="discipline-grid">
+                        <div *ngIf="analysis.strikingStrategy">
+                            <span>Striking</span>
+                            <p>{{ analysis.strikingStrategy }}</p>
+                        </div>
+
+                        <div *ngIf="analysis.grapplingStrategy">
+                            <span>Grappling</span>
+                            <p>{{ analysis.grapplingStrategy }}</p>
+                        </div>
+
+                        <div *ngIf="analysis.defensiveStrategy">
+                            <span>Defense</span>
+                            <p>{{ analysis.defensiveStrategy }}</p>
+                        </div>
+                    </div>
+
+                    <div class="round-plan-grid">
+                        <div *ngIf="analysis.roundOnePlan">
+                            <span>01</span>
+                            <small>Round one</small>
+                            <p>{{ analysis.roundOnePlan }}</p>
+                        </div>
+
+                        <div *ngIf="analysis.roundTwoPlan">
+                            <span>02</span>
+                            <small>Round two</small>
+                            <p>{{ analysis.roundTwoPlan }}</p>
+                        </div>
+
+                        <div *ngIf="analysis.roundThreePlan">
+                            <span>03</span>
+                            <small>Round three</small>
+                            <p>{{ analysis.roundThreePlan }}</p>
+                        </div>
+
+                        <div *ngIf="analysis.championshipRoundsPlan">
+                            <span>04–05</span>
+                            <small>Championship rounds</small>
+                            <p>
+                                {{ analysis.championshipRoundsPlan }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="execution-grid">
+                        <div *ngIf="analysis.keyTargets">
+                            <span class="execution-icon target">◎</span>
+
+                            <div>
+                                <strong>Key targets</strong>
+                                <p>{{ analysis.keyTargets }}</p>
+                            </div>
+                        </div>
+
+                        <div *ngIf="analysis.risksToAvoid">
+                            <span class="execution-icon warning">!</span>
+
+                            <div>
+                                <strong>Risks to avoid</strong>
+                                <p>{{ analysis.risksToAvoid }}</p>
+                            </div>
+                        </div>
+
+                        <div *ngIf="analysis.contingencyPlan">
+                            <span class="execution-icon contingency">↻</span>
+
+                            <div>
+                                <strong>Contingency plan</strong>
+                                <p>{{ analysis.contingencyPlan }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="analysis.coachNotes" class="coach-notes">
+                        <span>Coach notes</span>
+                        <p>{{ analysis.coachNotes }}</p>
+                    </div>
+                </article>
+            </div>
+
+            <div *ngIf="
+      !analysisLoading &&
+      savedAnalyses.length === 0 &&
+      !analysisFormVisible
+    " class="empty-plans">
+                <div class="empty-plan-icon">⌁</div>
+
+                <h3>No tactical plan created yet</h3>
+
+                <p>
+                    {{
+                    canManageAnalysis
+                    ? 'Create the first professional game plan for this matchup.'
+                    : 'A coach has not published a tactical plan for this matchup yet.'
+                    }}
+                </p>
+
+                <button *ngIf="canManageAnalysis" type="button" (click)="openAnalysisForm()">
+                    Create tactical plan
+                </button>
+            </div>
+
+            <!-- FORM -->
+
+            <form *ngIf="canManageAnalysis && analysisFormVisible" class="game-plan-form" (ngSubmit)="saveAnalysis()">
+                <header class="form-header">
+                    <div>
+                        <p class="eyebrow">
+                            {{
+                            editingAnalysis
+                            ? 'Update tactical preparation'
+                            : 'New tactical preparation'
+                            }}
+                        </p>
+
+                        <h3>
+                            {{
+                            editingAnalysis
+                            ? 'Edit Coach Game Plan'
+                            : 'Build Coach Game Plan'
+                            }}
+                        </h3>
+                    </div>
+
+                    <button type="button" class="close-plan-form" aria-label="Close form" [disabled]="analysisSaving"
+                        (click)="closeAnalysisForm()">
+                        ×
+                    </button>
+                </header>
+
+                <div *ngIf="analysisErrorMessage" class="analysis-message error">
+                    {{ analysisErrorMessage }}
+                </div>
+
+                <section class="form-section">
+                    <div class="form-section-heading">
+                        <span class="section-number">01</span>
+
+                        <div>
+                            <h4>Matchup overview</h4>
+                            <p>
+                                Define the purpose and general assessment of this
+                                tactical analysis.
+                            </p>
+                        </div>
+                    </div>
+
+                    <label class="analysis-field full-width">
+                        <span>Game plan title *</span>
+
+                        <input type="text" name="analysisTitle" maxlength="150" required
+                            [(ngModel)]="analysisForm.title"
+                            placeholder="Example: Lightweight Championship Game Plan" />
+                    </label>
+
+                    <label class="analysis-field full-width">
+                        <span>Matchup summary *</span>
+
+                        <textarea name="analysisSummary" rows="4" required [(ngModel)]="analysisForm.summary"
+                            placeholder="Summarize the matchup, main advantages and expected fight dynamics..."></textarea>
+                    </label>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-heading">
+                        <span class="section-number">02</span>
+
+                        <div>
+                            <h4>Fighter intelligence</h4>
+                            <p>
+                                Identify strengths and weaknesses that influence the
+                                tactical approach.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="fighter-analysis-grid">
+                        <div class="fighter-analysis-side red-analysis-side">
+                            <div class="fighter-form-heading">
+                                <span></span>
+
+                                <div>
+                                    <small>Red corner</small>
+                                    <strong>{{ redFighter?.name }}</strong>
+                                </div>
+                            </div>
+
+                            <label class="analysis-field">
+                                <span>Strengths to exploit</span>
+
+                                <textarea name="redFighterStrengths" rows="4" [(ngModel)]="
+                analysisForm.redFighterStrengths
+              " placeholder="Pressure, wrestling, cardio, cage control..."></textarea>
+                            </label>
+
+                            <label class="analysis-field">
+                                <span>Weaknesses to protect</span>
+
+                                <textarea name="redFighterWeaknesses" rows="4" [(ngModel)]="
+                analysisForm.redFighterWeaknesses
+              " placeholder="Range management, defensive reactions..."></textarea>
+                            </label>
+                        </div>
+
+                        <div class="fighter-analysis-side blue-analysis-side">
+                            <div class="fighter-form-heading">
+                                <span></span>
+
+                                <div>
+                                    <small>Blue corner</small>
+                                    <strong>{{ blueFighter?.name }}</strong>
+                                </div>
+                            </div>
+
+                            <label class="analysis-field">
+                                <span>Opponent strengths</span>
+
+                                <textarea name="blueFighterStrengths" rows="4" [(ngModel)]="
+                analysisForm.blueFighterStrengths
+              " placeholder="Reach, counter striking, submissions..."></textarea>
+                            </label>
+
+                            <label class="analysis-field">
+                                <span>Opponent weaknesses</span>
+
+                                <textarea name="blueFighterWeaknesses" rows="4" [(ngModel)]="
+                analysisForm.blueFighterWeaknesses
+              " placeholder="Takedown defense, body defense, cardio..."></textarea>
+                            </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-heading">
+                        <span class="section-number">03</span>
+
+                        <div>
+                            <h4>Core strategy</h4>
+                            <p>
+                                Build the main tactical system across striking,
+                                grappling and defense.
+                            </p>
+                        </div>
+                    </div>
+
+                    <label class="analysis-field full-width featured-field">
+                        <span>Overall strategy *</span>
+
+                        <textarea name="overallStrategy" rows="5" required [(ngModel)]="analysisForm.overallStrategy"
+                            placeholder="Describe the main path to victory and how the fight should be controlled..."></textarea>
+                    </label>
+
+                    <div class="three-column-fields">
+                        <label class="analysis-field">
+                            <span>Striking strategy</span>
+
+                            <textarea name="strikingStrategy" rows="5" [(ngModel)]="
+              analysisForm.strikingStrategy
+            " placeholder="Entries, combinations, feints, distance..."></textarea>
+                        </label>
+
+                        <label class="analysis-field">
+                            <span>Grappling strategy</span>
+
+                            <textarea name="grapplingStrategy" rows="5" [(ngModel)]="
+              analysisForm.grapplingStrategy
+            " placeholder="Takedowns, cage work, control, submissions..."></textarea>
+                        </label>
+
+                        <label class="analysis-field">
+                            <span>Defensive strategy</span>
+
+                            <textarea name="defensiveStrategy" rows="5" [(ngModel)]="
+              analysisForm.defensiveStrategy
+            " placeholder="Defensive priorities and danger zones..."></textarea>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-heading">
+                        <span class="section-number">04</span>
+
+                        <div>
+                            <h4>Round-by-round plan</h4>
+                            <p>
+                                Define the tactical objective and pace for every phase
+                                of the fight.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="round-form-grid">
+                        <label class="analysis-field round-field">
+                            <strong>01</strong>
+                            <span>Round one</span>
+
+                            <textarea name="roundOnePlan" rows="5" [(ngModel)]="analysisForm.roundOnePlan"
+                                placeholder="Establish range, test reactions..."></textarea>
+                        </label>
+
+                        <label class="analysis-field round-field">
+                            <strong>02</strong>
+                            <span>Round two</span>
+
+                            <textarea name="roundTwoPlan" rows="5" [(ngModel)]="analysisForm.roundTwoPlan"
+                                placeholder="Increase pressure, attack established weaknesses..."></textarea>
+                        </label>
+
+                        <label class="analysis-field round-field">
+                            <strong>03</strong>
+                            <span>Round three</span>
+
+                            <textarea name="roundThreePlan" rows="5" [(ngModel)]="analysisForm.roundThreePlan"
+                                placeholder="Manage score, maintain control..."></textarea>
+                        </label>
+
+                        <label class="analysis-field round-field">
+                            <strong>04–05</strong>
+                            <span>Championship rounds</span>
+
+                            <textarea name="championshipRoundsPlan" rows="5" [(ngModel)]="
+              analysisForm.championshipRoundsPlan
+            " placeholder="Cardio management and late-fight adjustments..."></textarea>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-section">
+                    <div class="form-section-heading">
+                        <span class="section-number">05</span>
+
+                        <div>
+                            <h4>Execution and adjustments</h4>
+                            <p>
+                                Document the key targets, major risks and alternative
+                                tactical response.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="three-column-fields">
+                        <label class="analysis-field">
+                            <span>Key targets</span>
+
+                            <textarea name="keyTargets" rows="5" [(ngModel)]="analysisForm.keyTargets"
+                                placeholder="Body, lead leg, cage position..."></textarea>
+                        </label>
+
+                        <label class="analysis-field">
+                            <span>Risks to avoid</span>
+
+                            <textarea name="risksToAvoid" rows="5" [(ngModel)]="analysisForm.risksToAvoid"
+                                placeholder="Long-range shots, straight retreats..."></textarea>
+                        </label>
+
+                        <label class="analysis-field">
+                            <span>Contingency plan</span>
+
+                            <textarea name="contingencyPlan" rows="5" [(ngModel)]="
+              analysisForm.contingencyPlan
+            " placeholder="Alternative strategy if the main approach fails..."></textarea>
+                        </label>
+                    </div>
+
+                    <label class="analysis-field full-width">
+                        <span>Private coach notes</span>
+
+                        <textarea name="coachNotes" rows="5" [(ngModel)]="analysisForm.coachNotes"
+                            placeholder="Mental preparation, corner instructions, reminders..."></textarea>
+                    </label>
+                </section>
+
+                <footer class="game-plan-form-actions">
+                    <button type="button" class="cancel-plan-button" [disabled]="analysisSaving"
+                        (click)="closeAnalysisForm()">
+                        Cancel
+                    </button>
+
+                    <button type="button" class="draft-plan-button" [disabled]="analysisSaving" (click)="saveDraft()">
+                        {{
+                        analysisSaving &&
+                        analysisForm.status === 'DRAFT'
+                        ? 'Saving...'
+                        : 'Save draft'
+                        }}
+                    </button>
+
+                    <button type="button" class="publish-plan-button" [disabled]="analysisSaving"
+                        (click)="publishAnalysis()">
+                        {{
+                        analysisSaving &&
+                        analysisForm.status === 'PUBLISHED'
+                        ? 'Publishing...'
+                        : editingAnalysis
+                        ? 'Update and publish'
+                        : 'Publish game plan'
+                        }}
+                    </button>
+                </footer>
+            </form>
+        </section>
+    </ng-container>
+</div>

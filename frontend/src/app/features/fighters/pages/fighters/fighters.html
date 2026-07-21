@@ -1,0 +1,598 @@
+<div class="fighters-page">
+  <header class="page-header">
+    <div class="header-left">
+      <button class="back-button" type="button" aria-label="Back to dashboard" (click)="goBack()">
+        ←
+      </button>
+
+      <div>
+        <p class="eyebrow">Athlete management</p>
+        <h1>Fighters</h1>
+        <p class="page-description">
+          Manage fighter profiles, competitive records and performance data.
+        </p>
+      </div>
+    </div>
+
+    <button *ngIf="isAdmin()" class="add-button" type="button" (click)="addFighter()">
+      <span>+</span>
+      Add fighter
+    </button>
+  </header>
+
+  <section class="toolbar">
+    <div class="search-wrapper">
+      <span class="search-icon">⌕</span>
+
+      <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
+        placeholder="Search fighters by name..." aria-label="Search fighters" />
+
+      <button *ngIf="searchTerm" class="clear-search" type="button" aria-label="Clear search" (click)="clearSearch()">
+        ×
+      </button>
+    </div>
+    <div class="toolbar-selects">
+
+      <select [(ngModel)]="selectedWeightClass">
+        <option *ngFor="let weightClass of weightClasses" [value]="weightClass">
+          {{ weightClass }}
+        </option>
+      </select>
+
+      <select [(ngModel)]="sortBy">
+        <option value="ranking">Ranking</option>
+        <option value="name">Name</option>
+        <option value="wins">Wins</option>
+        <option value="age">Age</option>
+      </select>
+
+      <select [(ngModel)]="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+
+    </div>
+
+    <div class="result-count">
+      <strong>{{ filteredFighters.length }}</strong>
+      <span>
+        {{ filteredFighters.length === 1 ? 'fighter' : 'fighters' }}
+      </span>
+    </div>
+  </section>
+
+  <div *ngIf="errorMessage" class="error-message">
+    <span>{{ errorMessage }}</span>
+
+    <button type="button" (click)="loadFighters()">
+      Try again
+    </button>
+  </div>
+
+  <section class="table-card">
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading fighters...</p>
+    </div>
+
+    <div *ngIf="!loading && fighters.length > 0" class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Fighter</th>
+            <th>Country</th>
+            <th>Record</th>
+            <th>Physical data</th>
+            <th>Style</th>
+            <th>Ranking</th>
+            <th class="actions-heading">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let fighter of filteredFighters">
+            <td>
+              <div class="fighter-cell">
+                <div class="fighter-avatar">
+                  <img *ngIf="fighter.image" [src]="fighter.image" [alt]="fighter.name" />
+
+                  <span *ngIf="!fighter.image">
+                    {{ getInitials(fighter.name) }}
+                  </span>
+                </div>
+
+                <div class="fighter-identity">
+                  <div class="fighter-name-row">
+                    <strong>{{ fighter.name }}</strong>
+
+                    <span *ngIf="fighter.champion" class="champion-badge">
+                      Champion
+                    </span>
+
+                    <span *ngIf="fighter.interimChampion && !fighter.champion" class="interim-badge">
+                      Interim
+                    </span>
+                  </div>
+
+                  <span *ngIf="fighter.nickname">
+                    “{{ fighter.nickname }}”
+                  </span>
+
+                  <span *ngIf="!fighter.nickname">
+                    No nickname
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <td>
+              <span class="country-value">
+                {{ fighter.country }}
+              </span>
+            </td>
+
+            <td>
+              <div class="record">
+                <strong>{{ getRecord(fighter) }}</strong>
+                <span>
+                  {{ fighter.koWins }} KO ·
+                  {{ fighter.submissionWins }} SUB
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <div class="physical-data">
+                <strong>{{ fighter.weight }} kg</strong>
+                <span>
+                  {{ fighter.height }} cm ·
+                  {{ fighter.age }} years
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <div class="style-data">
+                <strong>
+                  {{ fighter.fightingStyle || 'Not specified' }}
+                </strong>
+
+                <span>
+                  {{ fighter.stance || 'Unknown stance' }}
+                </span>
+              </div>
+            </td>
+
+            <td>
+              <span class="ranking-badge" [class.ranking-champion]="fighter.champion">
+                {{ getRankingLabel(fighter) }}
+              </span>
+            </td>
+
+            <td>
+              <div class="table-actions">
+                <button class="action-button" type="button" title="View fighter" (click)="viewFighter(fighter)">
+                  View
+                </button>
+
+                <button *ngIf="isAdmin()" class="action-button" type="button" title="Edit fighter">
+                  Edit
+                </button>
+
+                <button
+  *ngIf="isAdmin()"
+  class="action-button delete" type="button" title="Delete fighter"
+                  [disabled]="deletingId === fighter.id" (click)="openDeleteModal(fighter)">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && filteredFighters.length === 0" class="empty-state">
+      <div class="empty-icon">🥊</div>
+
+      <h2>
+        {{ searchTerm ? 'No fighters found' : 'No fighters yet' }}
+      </h2>
+
+      <p *ngIf="searchTerm">
+        No fighter matches “{{ searchTerm }}”.
+      </p>
+
+      <p *ngIf="!searchTerm">
+        Add your first fighter to begin building the database.
+      </p>
+
+      <button *ngIf="searchTerm" type="button" class="secondary-button" (click)="clearSearch()">
+        Clear search
+      </button>
+
+      <button
+  *ngIf="!searchTerm && isAdmin()" type="button" class="add-button" (click)="addFighter()">
+        <span>+</span>
+        Add first fighter
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- ADD / EDIT FIGHTER MODAL -->
+
+<div
+  *ngIf="modalOpen && isAdmin()" class="modal-backdrop" (mousedown)="onBackdropClick($event)">
+  <section class="fighter-modal" role="dialog" aria-modal="true">
+    <header class="modal-header">
+      <div>
+        <p class="eyebrow">
+          {{ editingFighter ? 'Update athlete' : 'New athlete' }}
+        </p>
+
+        <h2>
+          {{
+          editingFighter
+          ? 'Edit fighter'
+          : 'Add fighter'
+          }}
+        </h2>
+
+        <p>
+          Enter fighter profile, record and performance data.
+        </p>
+      </div>
+
+      <button class="modal-close" type="button" [disabled]="saving" (click)="closeModal()">
+        ×
+      </button>
+    </header>
+
+    <form class="fighter-form" [formGroup]="fighterForm" (ngSubmit)="saveFighter()">
+      <div class="form-content">
+        <section class="form-section">
+          <div class="section-heading">
+            <span>01</span>
+
+            <div>
+              <h3>Basic information</h3>
+              <p>Required personal and physical information.</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Full name *</span>
+
+              <input type="text" formControlName="name" placeholder="Jon Jones" [class.invalid]="isInvalid('name')" />
+
+              <small *ngIf="isInvalid('name')">
+                Name must contain at least 2 characters.
+              </small>
+            </label>
+
+            <label class="form-field">
+              <span>Nickname</span>
+
+              <input type="text" formControlName="nickname" placeholder="Bones" />
+            </label>
+
+            <label class="form-field">
+              <span>Country *</span>
+
+              <input type="text" formControlName="country" placeholder="United States"
+                [class.invalid]="isInvalid('country')" />
+
+              <small *ngIf="isInvalid('country')">
+                Country must contain at least 2 characters.
+              </small>
+            </label>
+
+            <label class="form-field">
+              <span>Age *</span>
+
+              <input type="number" formControlName="age" min="18" max="60" [class.invalid]="isInvalid('age')" />
+
+              <small *ngIf="isInvalid('age')">
+                Age must be between 18 and 60.
+              </small>
+            </label>
+
+            <label class="form-field">
+              <span>Height in cm *</span>
+
+              <input type="number" formControlName="height" min="140" max="230" [class.invalid]="isInvalid('height')" />
+
+              <small *ngIf="isInvalid('height')">
+                Height must be between 140 and 230 cm.
+              </small>
+            </label>
+
+            <label class="form-field">
+              <span>Weight in kg *</span>
+
+              <input type="number" formControlName="weight" min="45" max="180" [class.invalid]="isInvalid('weight')" />
+
+              <small *ngIf="isInvalid('weight')">
+                Weight must be between 45 and 180 kg.
+              </small>
+            </label>
+            <label class="form-field">
+              <span>Weight class *</span>
+
+              <select formControlName="weightClass">
+                <option value="Strawweight">Strawweight</option>
+                <option value="Flyweight">Flyweight</option>
+                <option value="Bantamweight">Bantamweight</option>
+                <option value="Featherweight">Featherweight</option>
+                <option value="Lightweight">Lightweight</option>
+                <option value="Welterweight">Welterweight</option>
+                <option value="Middleweight">Middleweight</option>
+                <option value="Light Heavyweight">
+                  Light Heavyweight
+                </option>
+                <option value="Heavyweight">Heavyweight</option>
+              </select>
+            </label>
+
+            <label class="form-field">
+              <span>Reach in cm</span>
+
+              <input type="number" formControlName="reach" min="120" max="250" [class.invalid]="isInvalid('reach')" />
+
+              <small *ngIf="isInvalid('reach')">
+                Reach must be between 120 and 250 cm.
+              </small>
+            </label>
+
+            <label class="form-field">
+              <span>Stance</span>
+
+              <select formControlName="stance">
+                <option value="">Select stance</option>
+                <option value="Orthodox">Orthodox</option>
+                <option value="Southpaw">Southpaw</option>
+                <option value="Switch">Switch</option>
+              </select>
+            </label>
+
+            <label class="form-field">
+              <span>Fighting style</span>
+
+              <input type="text" formControlName="fightingStyle" placeholder="Wrestling, Boxing..." />
+            </label>
+
+            <label class="form-field form-field-wide">
+              <span>Image URL</span>
+
+              <input type="url" formControlName="image" placeholder="https://example.com/fighter.jpg"
+                [class.invalid]="isInvalid('image')" />
+
+              <small *ngIf="isInvalid('image')">
+                Enter a valid URL beginning with http or https.
+              </small>
+            </label>
+
+            <label class="form-field form-field-wide">
+              <span>Biography</span>
+
+              <textarea formControlName="bio" rows="4" placeholder="Short fighter biography..."></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <span>02</span>
+
+            <div>
+              <h3>Fight record</h3>
+              <p>Wins, losses and victory methods.</p>
+            </div>
+          </div>
+
+          <div class="form-grid form-grid-four">
+            <label class="form-field">
+              <span>Wins</span>
+              <input type="number" formControlName="wins" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Losses</span>
+              <input type="number" formControlName="losses" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Draws</span>
+              <input type="number" formControlName="draws" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Win streak</span>
+              <input type="number" formControlName="currentWinStreak" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>KO wins</span>
+              <input type="number" formControlName="koWins" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Submission wins</span>
+              <input type="number" formControlName="submissionWins" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Decision wins</span>
+              <input type="number" formControlName="decisionWins" min="0" />
+            </label>
+
+            <label class="form-field">
+              <span>Ranking</span>
+              <input type="number" formControlName="ranking" min="1" />
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <span>03</span>
+
+            <div>
+              <h3>Performance statistics</h3>
+              <p>Striking, takedown and submission metrics.</p>
+            </div>
+          </div>
+
+          <div class="form-grid form-grid-four">
+            <label class="form-field">
+              <span>Striking accuracy %</span>
+
+              <input type="number" formControlName="strikingAccuracy" min="0" max="100" />
+            </label>
+
+            <label class="form-field">
+              <span>Striking defense %</span>
+
+              <input type="number" formControlName="strikingDefense" min="0" max="100" />
+            </label>
+
+            <label class="form-field">
+              <span>Sig. strikes/min</span>
+
+              <input type="number" formControlName="significantStrikesPerMinute" min="0" step="0.1" />
+            </label>
+
+            <label class="form-field">
+              <span>Sig. strikes absorbed/min</span>
+
+              <input type="number" formControlName="significantStrikesAbsorbedPerMinute" min="0" step="0.1" />
+            </label>
+
+            <label class="form-field">
+              <span>Takedown accuracy %</span>
+
+              <input type="number" formControlName="takedownAccuracy" min="0" max="100" />
+            </label>
+
+            <label class="form-field">
+              <span>Takedown defense %</span>
+
+              <input type="number" formControlName="takedownDefense" min="0" max="100" />
+            </label>
+
+            <label class="form-field">
+              <span>Takedowns per 15 min</span>
+
+              <input type="number" formControlName="takedownsPer15" min="0" step="0.1" />
+            </label>
+
+            <label class="form-field">
+              <span>Submission average</span>
+
+              <input type="number" formControlName="submissionAverage" min="0" step="0.1" />
+            </label>
+          </div>
+        </section>
+
+        <section class="form-section">
+          <div class="section-heading">
+            <span>04</span>
+
+            <div>
+              <h3>Championship status</h3>
+              <p>Mark the fighter's current title status.</p>
+            </div>
+          </div>
+
+          <div class="checkbox-grid">
+            <label class="checkbox-card">
+              <input type="checkbox" formControlName="champion" />
+
+              <span class="custom-checkbox"></span>
+
+              <span>
+                <strong>Champion</strong>
+                <small>Current undisputed champion</small>
+              </span>
+            </label>
+
+            <label class="checkbox-card">
+              <input type="checkbox" formControlName="interimChampion" />
+
+              <span class="custom-checkbox"></span>
+
+              <span>
+                <strong>Interim champion</strong>
+                <small>Current interim title holder</small>
+              </span>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <div *ngIf="formErrorMessage" class="form-error-message">
+        {{ formErrorMessage }}
+      </div>
+
+      <footer class="modal-footer">
+        <button class="cancel-button" type="button" [disabled]="saving" (click)="closeModal()">
+          Cancel
+        </button>
+
+        <button class="save-button" type="submit" [disabled]="saving">
+          <span *ngIf="saving" class="button-spinner"></span>
+
+          {{
+          saving
+          ? 'Saving...'
+          : editingFighter
+          ? 'Save changes'
+          : 'Add fighter'
+          }}
+        </button>
+      </footer>
+    </form>
+  </section>
+</div>
+
+<!-- DELETE FIGHTER MODAL -->
+
+<div  *ngIf="fighterToDelete && isAdmin()" class="delete-modal-backdrop" (click)="closeDeleteModal()">
+  <section class="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title"
+    (click)="$event.stopPropagation()">
+    <div class="delete-modal-icon" aria-hidden="true">
+      !
+    </div>
+
+    <h2 id="delete-modal-title">
+      Delete fighter
+    </h2>
+
+    <p>
+      Are you sure you want to delete
+      <strong>{{ fighterToDelete.name }}</strong>?
+    </p>
+
+    <p class="delete-modal-warning">
+      This action cannot be undone.
+    </p>
+
+    <div class="delete-modal-actions">
+      <button type="button" class="delete-modal-cancel" [disabled]="deletingId !== null" (click)="closeDeleteModal()">
+        Cancel
+      </button>
+
+      <button type="button" class="delete-modal-confirm" [disabled]="deletingId !== null" (click)="deleteFighter()">
+        <span *ngIf="deletingId !== null" class="delete-spinner"></span>
+
+        {{
+        deletingId !== null
+        ? 'Deleting...'
+        : 'Delete fighter'
+        }}
+      </button>
+    </div>
+  </section>
+</div>
