@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException
 } from '@nestjs/common';
+
+import { Role } from '../common/enums/role.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -11,7 +14,11 @@ import { User } from '../users/entities/user.entity';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 import { Club } from './entities/club.entity';
-
+interface AuthenticatedUser {
+  id: number;
+  email: string;
+  role: Role;
+}
 @Injectable()
 export class ClubsService {
   constructor(
@@ -24,7 +31,29 @@ export class ClubsService {
     @InjectRepository(Fighter)
     private readonly fightersRepository: Repository<Fighter>
   ) {}
+async findByCoachId(
+  coachId: number
+): Promise<Club> {
+  const club = await this.clubsRepository.findOne({
+    where: {
+      coach: {
+        id: coachId
+      }
+    },
+    relations: {
+      coach: true,
+      fighters: true
+    }
+  });
 
+  if (!club) {
+    throw new NotFoundException(
+      'No club is assigned to this coach.'
+    );
+  }
+
+  return club;
+}
   async create(createClubDto: CreateClubDto): Promise<Club> {
     const {
       coachId,
@@ -120,17 +149,33 @@ export class ClubsService {
     return club.fighters ?? [];
   }
 
-  async update(
-    id: number,
-    updateClubDto: UpdateClubDto
-  ): Promise<Club> {
+async update(
+  id: number,
+  updateClubDto: UpdateClubDto,
+  currentUser: AuthenticatedUser
+): Promise<Club>{
     const club = await this.findOne(id);
+    if (
+  currentUser.role === Role.COACH &&
+  club.coach?.id !== currentUser.id
+) {
+  throw new ForbiddenException(
+    'You can edit only your own club.'
+  );
+}
 
     const {
       coachId,
       ...clubData
     } = updateClubDto;
-
+if (
+  currentUser.role === Role.COACH &&
+  coachId !== undefined
+) {
+  throw new ForbiddenException(
+    'A coach cannot assign or replace the club coach.'
+  );
+}
     if (
       clubData.name &&
       clubData.name !== club.name
@@ -222,10 +267,20 @@ export class ClubsService {
   }
 
   async removeFighter(
-    clubId: number,
-    fighterId: number
-  ): Promise<Club> {
-    await this.findOne(clubId);
+  clubId: number,
+  fighterId: number,
+  currentUser: AuthenticatedUser
+): Promise<Club> {
+    const club = await this.findOne(clubId);
+
+if (
+  currentUser.role === Role.COACH &&
+  club.coach?.id !== currentUser.id
+) {
+  throw new ForbiddenException(
+    'You can remove fighters only from your own club.'
+  );
+}
 
     const fighter = await this.fightersRepository.findOne({
       where: {

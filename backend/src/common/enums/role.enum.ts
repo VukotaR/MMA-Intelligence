@@ -4,7 +4,6 @@ export enum Role {
 
   COACH = 'COACH',
 
-  MATCHMAKER = 'MATCHMAKER',
 
   ADMIN = 'ADMIN',
 
