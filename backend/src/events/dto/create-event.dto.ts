@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Min,
 } from 'class-validator';
 
 import { EventStatus } from '../enums/event-status.enum';
@@ -42,5 +43,6 @@ export class CreateEventDto {
   status?: EventStatus;
 
   @IsInt()
+  @Min(1)
   organizationId: number;
 }
