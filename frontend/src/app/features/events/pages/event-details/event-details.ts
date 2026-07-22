@@ -539,10 +539,9 @@ saveRequest$.subscribe({
         ? backendMessage.join(' ')
         : backendMessage ||
           (
-            this.toast.success(
-  'Fight created',
-  'Fight created successfully.'
-)
+            this.editingFight
+              ? 'Fight could not be updated.'
+              : 'Fight could not be created.'
           );
 
     this.savingFight = false;

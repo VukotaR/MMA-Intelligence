@@ -485,7 +485,7 @@ export class Events implements OnInit {
     }
 
     return new Intl.DateTimeFormat(
-      'sr-RS',
+      'en-US',
       {
         day: '2-digit',
         month: 'long',
@@ -511,7 +511,7 @@ export class Events implements OnInit {
     }
 
     return new Intl.DateTimeFormat(
-      'sr-RS',
+      'en-US',
       {
         hour: '2-digit',
         minute: '2-digit'
